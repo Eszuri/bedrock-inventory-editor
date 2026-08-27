@@ -813,4 +813,118 @@ public static class BedrockWorldService
             }
         }
     }
+
+    public static void ExtractPlayerStats(NbtCompound playerNbt, WorldSettingsModel model)
+    {
+        if (playerNbt.GetList("Attributes") is NbtList attrs)
+        {
+            foreach (var attr in attrs.OfType<NbtCompound>())
+            {
+                var name = attr.GetString("Name");
+                if (name == "minecraft:health")
+                {
+                    model.Health = attr.Get<NbtFloat>("Current")?.Value ?? 20f;
+                    model.MaxHealth = attr.Get<NbtFloat>("Max")?.Value ?? 20f;
+                }
+                else if (name == "minecraft:player.hunger")
+                {
+                    model.Hunger = attr.Get<NbtFloat>("Current")?.Value ?? 20f;
+                }
+                else if (name == "minecraft:player.saturation")
+                {
+                    model.Saturation = attr.Get<NbtFloat>("Current")?.Value ?? 20f;
+                }
+                else if (name == "minecraft:player.level")
+                {
+                    model.XpLevel = (int)(attr.Get<NbtFloat>("Current")?.Value ?? 0);
+                }
+                else if (name == "minecraft:player.experience")
+                {
+                    model.XpProgress = attr.Get<NbtFloat>("Current")?.Value ?? 0f;
+                }
+            }
+        }
+
+        if (playerNbt.ContainsKey("PlayerLevel"))
+        {
+            model.XpLevel = playerNbt.GetInt("PlayerLevel", model.XpLevel);
+        }
+        if (playerNbt.ContainsKey("PlayerLevelProgress"))
+        {
+            model.XpProgress = playerNbt.Get<NbtFloat>("PlayerLevelProgress")?.Value ?? model.XpProgress;
+        }
+
+        model.Dimension = playerNbt.GetInt("Dimension", 0);
+
+        if (playerNbt.GetList("Pos") is NbtList posList && posList.Count >= 3)
+        {
+            model.PosX = (posList[0] as NbtFloat)?.Value ?? 0f;
+            model.PosY = (posList[1] as NbtFloat)?.Value ?? 0f;
+            model.PosZ = (posList[2] as NbtFloat)?.Value ?? 0f;
+        }
+    }
+
+    public static void UpdatePlayerStats(NbtCompound playerNbt, WorldSettingsModel model)
+    {
+        // 1. Update or create Attributes list
+        var attrs = playerNbt.GetList("Attributes") ?? new NbtList("Attributes", NbtTagType.Compound);
+        
+        NbtCompound GetOrCreateAttr(string name)
+        {
+            var found = attrs.OfType<NbtCompound>().FirstOrDefault(a => a.GetString("Name") == name);
+            if (found == null)
+            {
+                found = new NbtCompound();
+                found.SetString("Name", name);
+                attrs.Add(found);
+            }
+            return found;
+        }
+
+        var healthAttr = GetOrCreateAttr("minecraft:health");
+        healthAttr.SetFloat("Current", model.Health);
+        healthAttr.SetFloat("Base", model.MaxHealth);
+        healthAttr.SetFloat("Max", model.MaxHealth);
+        healthAttr.SetFloat("Min", 0f);
+
+        var hungerAttr = GetOrCreateAttr("minecraft:player.hunger");
+        hungerAttr.SetFloat("Current", model.Hunger);
+        hungerAttr.SetFloat("Base", 20f);
+        hungerAttr.SetFloat("Max", 20f);
+        hungerAttr.SetFloat("Min", 0f);
+
+        var satAttr = GetOrCreateAttr("minecraft:player.saturation");
+        satAttr.SetFloat("Current", model.Saturation);
+        satAttr.SetFloat("Base", 5f);
+        satAttr.SetFloat("Max", 20f);
+        satAttr.SetFloat("Min", 0f);
+
+        var xpLvlAttr = GetOrCreateAttr("minecraft:player.level");
+        xpLvlAttr.SetFloat("Current", model.XpLevel);
+        xpLvlAttr.SetFloat("Base", model.XpLevel);
+        xpLvlAttr.SetFloat("Max", 24791f);
+        xpLvlAttr.SetFloat("Min", 0f);
+
+        var xpProgAttr = GetOrCreateAttr("minecraft:player.experience");
+        xpProgAttr.SetFloat("Current", Math.Clamp(model.XpProgress, 0f, 1f));
+        xpProgAttr.SetFloat("Base", Math.Clamp(model.XpProgress, 0f, 1f));
+        xpProgAttr.SetFloat("Max", 1f);
+        xpProgAttr.SetFloat("Min", 0f);
+
+        playerNbt.Set(attrs);
+
+        // 2. Root player level tags
+        playerNbt.SetInt("PlayerLevel", model.XpLevel);
+        playerNbt.SetFloat("PlayerLevelProgress", Math.Clamp(model.XpProgress, 0f, 1f));
+        playerNbt.SetInt("Dimension", model.Dimension);
+
+        // 3. Update Player Position
+        var posList = new NbtList("Pos", NbtTagType.Float)
+        {
+            new NbtFloat(string.Empty, (float)model.PosX),
+            new NbtFloat(string.Empty, (float)model.PosY),
+            new NbtFloat(string.Empty, (float)model.PosZ)
+        };
+        playerNbt.Set(posList);
+    }
 }

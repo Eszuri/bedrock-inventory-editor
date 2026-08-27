@@ -38,6 +38,10 @@ public partial class MainWindow : Window
     private readonly HashSet<BlockEntityContainer> _modifiedContainers = [];
     private BlockEntityContainer? _selectedContainer;
 
+    private WorldSettingsModel? _worldSettings;
+    private NbtCompound? _rawLevelDatNbt;
+    private int _levelDatHeaderVersion = 10;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -384,6 +388,9 @@ public partial class MainWindow : Window
         // Load Nearby Containers
         LoadContainersForCurrentSettings();
 
+        // Load World Settings & Player Attributes (Tab 4)
+        LoadWorldSettingsFromDisk();
+
         // Record in Recent Worlds History
         RecentWorldsService.AddRecentWorld(inputPath, worldName);
 
@@ -629,6 +636,311 @@ public partial class MainWindow : Window
     private void OnRescanContainersClick(object sender, RoutedEventArgs e)
     {
         LoadContainersForCurrentSettings();
+    }
+
+    // =========================================================================
+    // 🌍 WORLD SETTINGS & PLAYER ATTRIBUTES (TAB 4)
+    // =========================================================================
+
+    private void LoadWorldSettingsFromDisk()
+    {
+        if (string.IsNullOrEmpty(_currentWorldPath)) return;
+
+        var (model, rawNbt, headerVer, error) = BedrockLevelDatService.LoadWorldSettings(_currentWorldPath);
+        if (error != null || model == null)
+        {
+            TxtStatus.Text = $"Gagal memuat level.dat: {error}";
+            return;
+        }
+
+        _worldSettings = model;
+        _rawLevelDatNbt = rawNbt;
+        _levelDatHeaderVersion = headerVer;
+
+        if (_currentFullPlayerNbt != null)
+        {
+            BedrockWorldService.ExtractPlayerStats(_currentFullPlayerNbt, _worldSettings);
+        }
+
+        PopulateWorldSettingsUI();
+    }
+
+    private void PopulateWorldSettingsUI()
+    {
+        if (_worldSettings == null) return;
+
+        TxtWorldName.Text = _worldSettings.WorldName;
+        TxtWorldSeedDisplay.Text = _worldSettings.Seed.ToString();
+        CmbGameMode.SelectedIndex = Math.Clamp(_worldSettings.GameType, 0, 3);
+        CmbDifficulty.SelectedIndex = Math.Clamp(_worldSettings.Difficulty, 0, 3);
+        ChkHardcore.IsChecked = _worldSettings.IsHardcore;
+
+        TxtDayCount.Text = _worldSettings.DayCount.ToString();
+        SliderTimeOfDay.Value = _worldSettings.TimeOfDay;
+        UpdateTimeOfDayLabel(_worldSettings.TimeOfDay);
+        ChkDaylightCycle.IsChecked = _worldSettings.DoDaylightCycle;
+
+        CmbWeather.SelectedIndex = Math.Clamp(_worldSettings.WeatherType, 0, 2);
+        ChkWeatherCycle.IsChecked = _worldSettings.DoWeatherCycle;
+
+        SliderHealth.Value = Math.Clamp(_worldSettings.Health, 1, 40);
+        TxtHealthLabel.Text = $"{_worldSettings.Health:0.#} / {_worldSettings.MaxHealth:0.#} HP";
+
+        SliderHunger.Value = Math.Clamp(_worldSettings.Hunger, 0, 20);
+        TxtHungerLabel.Text = $"{_worldSettings.Hunger:0.#} / 20.0";
+
+        TxtSaturation.Text = _worldSettings.Saturation.ToString("0.#");
+        TxtXpLevel.Text = _worldSettings.XpLevel.ToString();
+        SliderXpProgress.Value = Math.Clamp((int)(_worldSettings.XpProgress * 100), 0, 100);
+        TxtXpProgressLabel.Text = $"{(int)(_worldSettings.XpProgress * 100)}% Progress";
+
+        TxtPlayerPosX.Text = _worldSettings.PosX.ToString("0.##");
+        TxtPlayerPosY.Text = _worldSettings.PosY.ToString("0.##");
+        TxtPlayerPosZ.Text = _worldSettings.PosZ.ToString("0.##");
+        CmbPlayerDim.SelectedIndex = Math.Clamp(_worldSettings.Dimension, 0, 2);
+
+        // Game Rules
+        ChkFallDamage.IsChecked = _worldSettings.FallDamage;
+        ChkFireDamage.IsChecked = _worldSettings.FireDamage;
+        ChkDrowningDamage.IsChecked = _worldSettings.DrowningDamage;
+        ChkFreezeDamage.IsChecked = _worldSettings.FreezeDamage;
+        ChkKeepInventory.IsChecked = _worldSettings.KeepInventory;
+        ChkMobGriefing.IsChecked = _worldSettings.MobGriefing;
+        ChkMobSpawning.IsChecked = _worldSettings.DoMobSpawning;
+        ChkMobLoot.IsChecked = _worldSettings.DoMobLoot;
+        ChkTileDrops.IsChecked = _worldSettings.DoTileDrops;
+        ChkEntityDrops.IsChecked = _worldSettings.DoEntityDrops;
+        ChkNaturalRegen.IsChecked = _worldSettings.NaturalRegeneration;
+        ChkPvp.IsChecked = _worldSettings.Pvp;
+        ChkShowCoordinates.IsChecked = _worldSettings.ShowCoordinates;
+        ChkImmediateRespawn.IsChecked = _worldSettings.DoImmediateRespawn;
+        ChkTntExplodes.IsChecked = _worldSettings.TntExplodes;
+        ChkShowDaysPlayed.IsChecked = _worldSettings.ShowDaysPlayed;
+        TxtRandomTickSpeed.Text = _worldSettings.RandomTickSpeed.ToString();
+        TxtSleepingPercent.Text = _worldSettings.PlayersSleepingPercentage.ToString();
+
+        // Cheats & Achievements
+        ChkCheatsEnabled.IsChecked = _worldSettings.CheatsEnabled;
+        ChkCommandsEnabled.IsChecked = _worldSettings.CommandsEnabled;
+        UpdateAchievementBadge();
+    }
+
+    private void OnCopySeedClick(object sender, RoutedEventArgs e)
+    {
+        if (_worldSettings != null)
+        {
+            Clipboard.SetText(_worldSettings.Seed.ToString());
+            TxtStatus.Text = $"Seed world '{_worldSettings.Seed}' berhasil disalin ke Clipboard! 📋";
+            MessageBox.Show($"Seed world berhasil disalin ke Clipboard:\n\n{_worldSettings.Seed}", "Seed Disalin", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    private void OnDayDecrementClick(object sender, RoutedEventArgs e)
+    {
+        if (long.TryParse(TxtDayCount.Text, out var day))
+        {
+            TxtDayCount.Text = Math.Max(0, day - 1).ToString();
+        }
+    }
+
+    private void OnDayIncrementClick(object sender, RoutedEventArgs e)
+    {
+        if (long.TryParse(TxtDayCount.Text, out var day))
+        {
+            TxtDayCount.Text = (day + 1).ToString();
+        }
+    }
+
+    private void OnHealthFullClick(object sender, RoutedEventArgs e) => SliderHealth.Value = 20;
+    private void OnHealthDoubleClick(object sender, RoutedEventArgs e) => SliderHealth.Value = 40;
+    private void OnHungerFullClick(object sender, RoutedEventArgs e) { SliderHunger.Value = 20; TxtSaturation.Text = "20"; }
+    private void OnXpLevel30Click(object sender, RoutedEventArgs e) => TxtXpLevel.Text = "30";
+    private void OnXpLevel100Click(object sender, RoutedEventArgs e) => TxtXpLevel.Text = "100";
+    private void OnXpLevel1000Click(object sender, RoutedEventArgs e) => TxtXpLevel.Text = "1000";
+
+    private void UpdateAchievementBadge()
+    {
+        if (_worldSettings == null) return;
+
+        if (!_worldSettings.HasBeenLoadedInCreative && !_worldSettings.CheatsEnabled)
+        {
+            TxtAchievementStatus.Text = "🔓 Achievement Aktif (World Murni • Belum Pernah Creative & Cheat)";
+            TxtAchievementStatus.Foreground = new SolidColorBrush(Color.FromRgb(85, 255, 85));
+            PnlAchievementStatus.Background = new SolidColorBrush(Color.FromRgb(26, 40, 26));
+            PnlAchievementStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(46, 90, 46));
+        }
+        else
+        {
+            TxtAchievementStatus.Text = "🔒 Achievement Terkunci (Pernah Mode Creative / Cheat Aktif)";
+            TxtAchievementStatus.Foreground = new SolidColorBrush(Color.FromRgb(255, 170, 85));
+            PnlAchievementStatus.Background = new SolidColorBrush(Color.FromRgb(34, 24, 38));
+            PnlAchievementStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(76, 40, 85));
+        }
+    }
+
+    private void UpdateTimeOfDayLabel(int ticks)
+    {
+        int totalHours = (ticks / 1000 + 6) % 24;
+        int totalMinutes = (int)((ticks % 1000) * 60 / 1000.0);
+        string period = totalHours switch
+        {
+            >= 5 and < 11 => "Pagi Hari 🌅",
+            >= 11 and < 15 => "Siang Hari ☀️",
+            >= 15 and < 19 => "Sore / Senja 🌇",
+            _ => "Malam Hari 🌙"
+        };
+        TxtTimeOfDayLabel.Text = $"🕐 {totalHours:D2}:{totalMinutes:D2} ({ticks} ticks) • {period}";
+    }
+
+    private void OnTimeOfDaySliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_isInitialized || _worldSettings == null) return;
+        _worldSettings.TimeOfDay = (int)SliderTimeOfDay.Value;
+        UpdateTimeOfDayLabel(_worldSettings.TimeOfDay);
+    }
+
+    private void OnPresetMorningClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 1000;
+    private void OnPresetNoonClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 6000;
+    private void OnPresetSunsetClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 12000;
+    private void OnPresetMidnightClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 18000;
+
+    private void OnHealthSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_isInitialized) return;
+        TxtHealthLabel.Text = $"{SliderHealth.Value:0.#} / {Math.Max(20, SliderHealth.Value):0.#} HP ({(int)(SliderHealth.Value / 2)} Hati)";
+    }
+
+    private void OnHungerSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_isInitialized) return;
+        TxtHungerLabel.Text = $"{SliderHunger.Value:0.#} / 20.0";
+    }
+
+    private void OnXpProgressSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_isInitialized) return;
+        TxtXpProgressLabel.Text = $"{(int)SliderXpProgress.Value}% Progress";
+    }
+
+    private void OnRestoreAchievementsClick(object sender, RoutedEventArgs e)
+    {
+        if (_worldSettings == null) return;
+
+        _worldSettings.HasBeenLoadedInCreative = false;
+        _worldSettings.CheatsEnabled = false;
+        _worldSettings.CommandsEnabled = false;
+        ChkCheatsEnabled.IsChecked = false;
+        ChkCommandsEnabled.IsChecked = false;
+        UpdateAchievementBadge();
+
+        MessageBox.Show(
+            "Status Achievement Xbox berhasil dipulihkan!\n\nJangan lupa klik '💾 Simpan Pengaturan' untuk menerapkan perubahan ke file level.dat.",
+            "Achievement Dipulihkan",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information
+        );
+    }
+
+    private void OnReloadWorldSettingsClick(object sender, RoutedEventArgs e)
+    {
+        LoadWorldSettingsFromDisk();
+        TxtStatus.Text = "Pengaturan world berhasil dimuat ulang dari disk.";
+    }
+
+    private void OnSaveWorldSettingsClick(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_currentWorldPath) || _worldSettings == null)
+        {
+            MessageBox.Show("Tidak ada world yang sedang terbuka.", "Peringatan", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Read UI inputs into model (Seed is NOT modified from UI!)
+        _worldSettings.WorldName = string.IsNullOrWhiteSpace(TxtWorldName.Text) ? "Bedrock World" : TxtWorldName.Text.Trim();
+        _worldSettings.GameType = CmbGameMode.SelectedIndex;
+        _worldSettings.Difficulty = CmbDifficulty.SelectedIndex;
+        _worldSettings.IsHardcore = ChkHardcore.IsChecked == true;
+
+        if (long.TryParse(TxtDayCount.Text, out var day)) _worldSettings.DayCount = day;
+        _worldSettings.TimeOfDay = (int)SliderTimeOfDay.Value;
+        _worldSettings.DoDaylightCycle = ChkDaylightCycle.IsChecked == true;
+
+        _worldSettings.WeatherType = CmbWeather.SelectedIndex;
+        _worldSettings.DoWeatherCycle = ChkWeatherCycle.IsChecked == true;
+
+        _worldSettings.Health = (float)SliderHealth.Value;
+        _worldSettings.MaxHealth = Math.Max(20f, (float)SliderHealth.Value);
+        _worldSettings.Hunger = (float)SliderHunger.Value;
+        if (float.TryParse(TxtSaturation.Text, out var sat)) _worldSettings.Saturation = sat;
+        if (int.TryParse(TxtXpLevel.Text, out var xpLvl)) _worldSettings.XpLevel = xpLvl;
+        _worldSettings.XpProgress = (float)(SliderXpProgress.Value / 100.0);
+
+        if (double.TryParse(TxtPlayerPosX.Text, out var px)) _worldSettings.PosX = px;
+        if (double.TryParse(TxtPlayerPosY.Text, out var py)) _worldSettings.PosY = py;
+        if (double.TryParse(TxtPlayerPosZ.Text, out var pz)) _worldSettings.PosZ = pz;
+        _worldSettings.Dimension = CmbPlayerDim.SelectedIndex;
+
+        // GameRules
+        _worldSettings.FallDamage = ChkFallDamage.IsChecked == true;
+        _worldSettings.FireDamage = ChkFireDamage.IsChecked == true;
+        _worldSettings.DrowningDamage = ChkDrowningDamage.IsChecked == true;
+        _worldSettings.FreezeDamage = ChkFreezeDamage.IsChecked == true;
+        _worldSettings.KeepInventory = ChkKeepInventory.IsChecked == true;
+        _worldSettings.MobGriefing = ChkMobGriefing.IsChecked == true;
+        _worldSettings.DoMobSpawning = ChkMobSpawning.IsChecked == true;
+        _worldSettings.DoMobLoot = ChkMobLoot.IsChecked == true;
+        _worldSettings.DoTileDrops = ChkTileDrops.IsChecked == true;
+        _worldSettings.DoEntityDrops = ChkEntityDrops.IsChecked == true;
+        _worldSettings.NaturalRegeneration = ChkNaturalRegen.IsChecked == true;
+        _worldSettings.Pvp = ChkPvp.IsChecked == true;
+        _worldSettings.ShowCoordinates = ChkShowCoordinates.IsChecked == true;
+        _worldSettings.DoImmediateRespawn = ChkImmediateRespawn.IsChecked == true;
+        _worldSettings.TntExplodes = ChkTntExplodes.IsChecked == true;
+        _worldSettings.ShowDaysPlayed = ChkShowDaysPlayed.IsChecked == true;
+        if (int.TryParse(TxtRandomTickSpeed.Text, out var rts)) _worldSettings.RandomTickSpeed = rts;
+        if (int.TryParse(TxtSleepingPercent.Text, out var sp)) _worldSettings.PlayersSleepingPercentage = sp;
+
+        _worldSettings.CheatsEnabled = ChkCheatsEnabled.IsChecked == true;
+        _worldSettings.CommandsEnabled = ChkCommandsEnabled.IsChecked == true;
+
+        // 1. Save level.dat
+        var error = BedrockLevelDatService.SaveWorldSettings(_currentWorldPath, _worldSettings, _rawLevelDatNbt, _levelDatHeaderVersion);
+        if (error != null)
+        {
+            MessageBox.Show($"Gagal menyimpan level.dat:\n{error}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        // 2. Save player attributes to LevelDB
+        if (_currentFullPlayerNbt != null)
+        {
+            BedrockWorldService.UpdatePlayerStats(_currentFullPlayerNbt, _worldSettings);
+            var (pSuccess, _, pError) = BedrockWorldService.SavePlayerNbt(
+                _currentWorldPath, 
+                _currentFullPlayerNbt, 
+                _currentPlayerKey, 
+                createBackup: false, 
+                hasRootHeader: _hasRootHeader
+            );
+
+            if (!pSuccess)
+            {
+                MessageBox.Show($"Level.dat tersimpan, tetapi gagal menyimpan status player ke LevelDB:\n{pError}", "Peringatan", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // Update titles
+        TxtActiveWorldName.Text = _worldSettings.WorldName;
+        TxtToolbarWorldName.Text = _worldSettings.WorldName;
+        UpdateAchievementBadge();
+
+        TxtStatus.Text = $"Pengaturan world '{_worldSettings.WorldName}' dan status pemain berhasil disimpan!";
+        MessageBox.Show(
+            $"Pengaturan world '{_worldSettings.WorldName}' dan atribut pemain berhasil disimpan secara aman ke level.dat dan LevelDB!",
+            "Berhasil Disimpan",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information
+        );
     }
 
     protected override void OnClosing(CancelEventArgs e)

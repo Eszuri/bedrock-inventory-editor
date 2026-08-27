@@ -226,6 +226,8 @@ public class NbtCompound : NbtTag, IEnumerable<NbtTag>
     public void SetShort(string name, short value) => Set(new NbtShort(name, value));
     public void SetInt(string name, int value) => Set(new NbtInt(name, value));
     public void SetLong(string name, long value) => Set(new NbtLong(name, value));
+    public void SetFloat(string name, float value) => Set(new NbtFloat(name, value));
+    public void SetDouble(string name, double value) => Set(new NbtDouble(name, value));
     public void SetString(string name, string value) => Set(new NbtString(name, value));
 
     public bool Remove(string key) => _tags.Remove(key);

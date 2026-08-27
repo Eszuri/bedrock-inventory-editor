@@ -562,6 +562,329 @@
                             </Grid>
                         </TabItem>
 
+                        <!-- TAB 4: WORLD SETTINGS & GAMERULES (REDESIGNED LUXURY UX) -->
+                        <TabItem Header="🌍 Pengaturan World &amp; Pemain">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,6,0,0">
+                                <StackPanel Margin="0,0,6,12">
+                                    
+                                    <!-- SECTION 1: HERO WORLD BANNER & SEED DISPLAY -->
+                                    <Border Background="#151522" CornerRadius="8" BorderBrush="#2D2D42" BorderThickness="1" Padding="14,12" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Row 0: World Name & Action Buttons -->
+                                            <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                                                    <Button x:Name="BtnReloadWorldSettings" Content="🔄 Muat Ulang" Padding="12,6" Margin="0,0,8,0" FontWeight="SemiBold" Background="#202032" BorderBrush="#3B3B54" Foreground="#CCCCEE" Click="OnReloadWorldSettingsClick"/>
+                                                    <Button x:Name="BtnSaveWorldSettings" Content="💾 Simpan Pengaturan" Padding="16,6" FontWeight="Bold" Background="#1B4E2E" BorderBrush="#2F804B" Foreground="#55FF55" Click="OnSaveWorldSettingsClick"/>
+                                                </StackPanel>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Nama World:" FontSize="10" FontWeight="SemiBold" Foreground="#8888AA" Margin="0,0,0,2"/>
+                                                    <TextBox x:Name="TxtWorldName" Height="32" Padding="8,4" Background="#1B1B2A" BorderBrush="#3C3C58" Foreground="#FFFFFF" FontWeight="Bold" FontSize="14" VerticalContentAlignment="Center" Width="360" HorizontalAlignment="Left"/>
+                                                </StackPanel>
+                                            </DockPanel>
+
+                                            <!-- Row 1: Read-Only Seed Badge & Game Mode / Difficulty Badges -->
+                                            <WrapPanel Grid.Row="1" Margin="0,0,0,10">
+                                                <!-- Seed Display Badge (Read-Only) -->
+                                                <Border Background="#1A1A28" BorderBrush="#35354E" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,6" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="🔑 Seed:" FontSize="11" FontWeight="Bold" Foreground="#AAAAFF" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                        <TextBlock x:Name="TxtWorldSeedDisplay" Text="-" FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                        <Button x:Name="BtnCopySeed" Content="📋 Salin" Padding="8,2" FontSize="10" FontWeight="Bold" Background="#252538" BorderBrush="#454565" Foreground="#EEEEFF" Click="OnCopySeedClick" ToolTip="Salin Seed ke Clipboard"/>
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Game Mode Dropdown -->
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,6">
+                                                    <TextBlock Text="Mode:" FontSize="11" FontWeight="SemiBold" Foreground="#8888AA" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <ComboBox x:Name="CmbGameMode" Height="28" Width="125">
+                                                        <ComboBoxItem Content="⚔️ Survival" IsSelected="True"/>
+                                                        <ComboBoxItem Content="🧱 Creative"/>
+                                                        <ComboBoxItem Content="🗺️ Adventure"/>
+                                                        <ComboBoxItem Content="👁️ Spectator"/>
+                                                    </ComboBox>
+                                                </StackPanel>
+
+                                                <!-- Difficulty Dropdown -->
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,6">
+                                                    <TextBlock Text="Kesulitan:" FontSize="11" FontWeight="SemiBold" Foreground="#8888AA" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <ComboBox x:Name="CmbDifficulty" Height="28" Width="135">
+                                                        <ComboBoxItem Content="☮️ Peaceful"/>
+                                                        <ComboBoxItem Content="🟢 Easy"/>
+                                                        <ComboBoxItem Content="🟡 Normal" IsSelected="True"/>
+                                                        <ComboBoxItem Content="🔴 Hard"/>
+                                                    </ComboBox>
+                                                </StackPanel>
+
+                                                <!-- Hardcore Checkbox -->
+                                                <CheckBox x:Name="ChkHardcore" Content="💀 Hardcore (1 Nyawa)" Foreground="#FF6666" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" Margin="6,0,0,6"/>
+                                            </WrapPanel>
+
+                                            <!-- Row 2: Xbox Achievement Banner -->
+                                            <Border Grid.Row="2" x:Name="PnlAchievementStatus" Background="#221826" BorderBrush="#4C2855" BorderThickness="1" CornerRadius="6" Padding="12,8">
+                                                <DockPanel LastChildFill="True">
+                                                    <Button x:Name="BtnRestoreAchievements" DockPanel.Dock="Right" Content="✨ Pulihkan Status Achievement" Padding="12,5" FontWeight="Bold" FontSize="11" Background="#3E1C52" BorderBrush="#7A36A3" Foreground="#FFAAFF" Click="OnRestoreAchievementsClick" ToolTip="Menyetel hasBeenLoadedInCreative = 0 dan mematikan cheat sehingga world bisa mendapatkan achievement Xbox kembali."/>
+                                                    <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                                                        <TextBlock x:Name="TxtAchievementStatus" Text="🔒 Achievement Terkunci (Pernah Mode Creative / Cheat Aktif)" Foreground="#FFAA55" FontWeight="Bold" FontSize="11"/>
+                                                        <TextBlock Text="World yang pernah membuka Creative/Cheat dikunci oleh game. Klik 'Pulihkan' agar dapat meraih trophy Xbox kembali." FontSize="10" Foreground="#AA88AA" Margin="0,2,0,0"/>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- 2-COLUMN MAIN CONTENT GRID -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.05*"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="0.95*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- LEFT COLUMN: Time/Weather & Player Stats -->
+                                        <StackPanel Grid.Column="0">
+                                            
+                                            <!-- CARD: ⏰ WAKTU & CUACA (TIME & WEATHER) -->
+                                            <Border Background="#141420" CornerRadius="8" BorderBrush="#28283C" BorderThickness="1" Padding="14,12" Margin="0,0,0,12">
+                                                <StackPanel>
+                                                    <DockPanel Margin="0,0,0,10">
+                                                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                                            <Button Content="-" Width="24" Height="24" Padding="0" FontWeight="Bold" Background="#222234" BorderBrush="#38384E" Click="OnDayDecrementClick"/>
+                                                            <TextBox x:Name="TxtDayCount" Width="48" Height="24" Padding="2,1" Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF" TextAlignment="Center" Text="1" FontWeight="Bold" FontSize="11" Margin="2,0"/>
+                                                            <Button Content="+" Width="24" Height="24" Padding="0" FontWeight="Bold" Background="#222234" BorderBrush="#38384E" Click="OnDayIncrementClick"/>
+                                                        </StackPanel>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="⏰ Waktu Hari &amp; Cuaca" FontWeight="Bold" FontSize="12" Foreground="#55FFFF"/>
+                                                            <TextBlock Text="Atur perputaran jam, hari, dan kondisi cuaca" FontSize="10" Foreground="#8888AA"/>
+                                                        </StackPanel>
+                                                    </DockPanel>
+
+                                                    <!-- Clock Display Box -->
+                                                    <Border Background="#0F0F18" CornerRadius="6" Padding="10,6" Margin="0,0,0,8" BorderBrush="#222232" BorderThickness="1">
+                                                        <DockPanel>
+                                                            <TextBlock Text="Waktu Saat Ini:" FontSize="11" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                                            <TextBlock x:Name="TxtTimeOfDayLabel" Text="🕐 12:00 (6000 ticks) • Siang Hari" FontWeight="Bold" FontSize="12" Foreground="#FFFF55" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                        </DockPanel>
+                                                    </Border>
+
+                                                    <!-- Slider -->
+                                                    <Slider x:Name="SliderTimeOfDay" Minimum="0" Maximum="23999" TickFrequency="1000" IsSnapToTickEnabled="False" Margin="0,0,0,8" ValueChanged="OnTimeOfDaySliderChanged"/>
+
+                                                    <!-- 4 Preset Buttons -->
+                                                    <UniformGrid Rows="1" Columns="4" Margin="0,0,0,10">
+                                                        <Button Content="🌅 Pagi" Padding="4,4" FontSize="11" FontWeight="SemiBold" Margin="2" Background="#1E1E2E" BorderBrush="#35354A" Foreground="#FFDDAA" Click="OnPresetMorningClick"/>
+                                                        <Button Content="☀️ Siang" Padding="4,4" FontSize="11" FontWeight="SemiBold" Margin="2" Background="#1E1E2E" BorderBrush="#35354A" Foreground="#FFFF88" Click="OnPresetNoonClick"/>
+                                                        <Button Content="🌇 Sore" Padding="4,4" FontSize="11" FontWeight="SemiBold" Margin="2" Background="#1E1E2E" BorderBrush="#35354A" Foreground="#FFAA77" Click="OnPresetSunsetClick"/>
+                                                        <Button Content="🌙 Malam" Padding="4,4" FontSize="11" FontWeight="SemiBold" Margin="2" Background="#1E1E2E" BorderBrush="#35354A" Foreground="#AA88FF" Click="OnPresetMidnightClick"/>
+                                                    </UniformGrid>
+
+                                                    <CheckBox x:Name="ChkDaylightCycle" Content="Pergerakan Matahari Berjalan (dodaylightcycle)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,10"/>
+
+                                                    <Border Height="1" Background="#242436" Margin="0,0,0,10"/>
+
+                                                    <!-- Weather Grid -->
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="8"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="Kondisi Cuaca:" FontSize="10" FontWeight="SemiBold" Foreground="#8888AA" Margin="0,0,0,3"/>
+                                                            <ComboBox x:Name="CmbWeather" Height="28">
+                                                                <ComboBoxItem Content="☀️ Cerah (Clear)" IsSelected="True"/>
+                                                                <ComboBoxItem Content="🌧️ Hujan (Rain)"/>
+                                                                <ComboBoxItem Content="⛈️ Badai (Thunder)"/>
+                                                            </ComboBox>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
+                                                            <CheckBox x:Name="ChkWeatherCycle" Content="Cuaca Alami (doweathercycle)" Foreground="#CCCCCC" FontSize="10" Height="28" VerticalAlignment="Center" IsChecked="True"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- CARD: ❤️ STATUS & ATRIBUT PEMAIN -->
+                                            <Border Background="#141420" CornerRadius="8" BorderBrush="#28283C" BorderThickness="1" Padding="14,12" Margin="0,0,0,12">
+                                                <StackPanel>
+                                                    <DockPanel Margin="0,0,0,10">
+                                                        <TextBlock Text="❤️ Status &amp; Atribut Pemain (~local_player)" FontWeight="Bold" FontSize="12" Foreground="#FF6666" VerticalAlignment="Center"/>
+                                                    </DockPanel>
+
+                                                    <!-- Health Section -->
+                                                    <DockPanel Margin="0,0,0,2">
+                                                        <TextBlock Text="Darah / Health:" FontSize="11" Foreground="#AAAAAA"/>
+                                                        <TextBlock x:Name="TxtHealthLabel" Text="20.0 / 20.0 HP (10 Hati)" FontWeight="Bold" FontSize="11" Foreground="#FF5555" HorizontalAlignment="Right"/>
+                                                    </DockPanel>
+                                                    <Slider x:Name="SliderHealth" Minimum="1" Maximum="40" Value="20" Margin="0,0,0,4" ValueChanged="OnHealthSliderChanged"/>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
+                                                        <Button Content="❤️ 20 HP (Full)" Padding="6,2" FontSize="10" Margin="0,0,4,0" Background="#261818" BorderBrush="#4C2626" Foreground="#FFAAAA" Click="OnHealthFullClick"/>
+                                                        <Button Content="🛡️ 40 HP (Double)" Padding="6,2" FontSize="10" Background="#261818" BorderBrush="#4C2626" Foreground="#FFAAAA" Click="OnHealthDoubleClick"/>
+                                                    </StackPanel>
+
+                                                    <!-- Hunger & Saturation Section -->
+                                                    <DockPanel Margin="0,0,0,2">
+                                                        <TextBlock Text="Tingkat Lapar (Hunger):" FontSize="11" Foreground="#AAAAAA"/>
+                                                        <TextBlock x:Name="TxtHungerLabel" Text="20.0 / 20.0" FontWeight="Bold" FontSize="11" Foreground="#FFAA00" HorizontalAlignment="Right"/>
+                                                    </DockPanel>
+                                                    <Slider x:Name="SliderHunger" Minimum="0" Maximum="20" Value="20" Margin="0,0,0,4" ValueChanged="OnHungerSliderChanged"/>
+                                                    
+                                                    <Grid Margin="0,0,0,8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="8"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="Saturasi Makanan:" FontSize="10" Foreground="#8888AA" Margin="0,0,0,2"/>
+                                                            <TextBox x:Name="TxtSaturation" Height="24" Padding="6,1" Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF" Text="20"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
+                                                            <Button Content="🍗 Kenyang Penuh" Height="24" Padding="6,1" FontSize="10" FontWeight="SemiBold" Background="#282014" BorderBrush="#4A381E" Foreground="#FFCC88" Click="OnHungerFullClick"/>
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                    <!-- XP Section -->
+                                                    <Border Height="1" Background="#242436" Margin="0,2,0,8"/>
+                                                    <DockPanel Margin="0,0,0,2">
+                                                        <TextBlock Text="Level XP Pemain:" FontSize="11" Foreground="#AAAAAA"/>
+                                                        <TextBlock x:Name="TxtXpProgressLabel" Text="0% Progress" FontWeight="Bold" FontSize="11" Foreground="#55FF55" HorizontalAlignment="Right"/>
+                                                    </DockPanel>
+                                                    
+                                                    <Grid Margin="0,0,0,4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="70"/>
+                                                            <ColumnDefinition Width="8"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBox x:Name="TxtXpLevel" Grid.Column="0" Height="26" Padding="6,2" Background="#1A1A28" BorderBrush="#35354C" Foreground="#55FF55" FontWeight="Bold" FontSize="12" Text="30" TextAlignment="Center"/>
+                                                        <Slider x:Name="SliderXpProgress" Grid.Column="2" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center" ValueChanged="OnXpProgressSliderChanged"/>
+                                                    </Grid>
+
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
+                                                        <Button Content="🧪 Lv 30" Padding="6,2" FontSize="10" Margin="0,0,4,0" Background="#142618" BorderBrush="#264C28" Foreground="#AAFFAA" Click="OnXpLevel30Click"/>
+                                                        <Button Content="🧪 Lv 100" Padding="6,2" FontSize="10" Margin="0,0,4,0" Background="#142618" BorderBrush="#264C28" Foreground="#AAFFAA" Click="OnXpLevel100Click"/>
+                                                        <Button Content="🧪 Lv 1000" Padding="6,2" FontSize="10" Background="#142618" BorderBrush="#264C28" Foreground="#AAFFAA" Click="OnXpLevel1000Click"/>
+                                                    </StackPanel>
+
+                                                    <!-- Teleportation -->
+                                                    <Border Height="1" Background="#242436" Margin="0,2,0,8"/>
+                                                    <TextBlock Text="📍 Teleportasi Titik Koordinat &amp; Dimensi:" FontSize="11" FontWeight="Bold" Foreground="#AAAAFF" Margin="0,0,0,6"/>
+                                                    <Grid Margin="0,0,0,6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="6"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="6"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="X:" FontSize="10" Foreground="#8888AA"/>
+                                                            <TextBox x:Name="TxtPlayerPosX" Height="24" Padding="4,1" Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF" FontSize="11"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2">
+                                                            <TextBlock Text="Y:" FontSize="10" Foreground="#8888AA"/>
+                                                            <TextBox x:Name="TxtPlayerPosY" Height="24" Padding="4,1" Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF" FontSize="11"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="4">
+                                                            <TextBlock Text="Z:" FontSize="10" Foreground="#8888AA"/>
+                                                            <TextBox x:Name="TxtPlayerPosZ" Height="24" Padding="4,1" Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF" FontSize="11"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                    <ComboBox x:Name="CmbPlayerDim" Height="28">
+                                                        <ComboBoxItem Content="🌲 Overworld (Dunia Atas)" IsSelected="True"/>
+                                                        <ComboBoxItem Content="🔥 Nether (Neraka)"/>
+                                                        <ComboBoxItem Content="🌌 The End (Dunia Akhir)"/>
+                                                    </ComboBox>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- RIGHT COLUMN: GameRules Hub & Cheats -->
+                                        <StackPanel Grid.Column="2">
+                                            
+                                            <!-- CARD: ⚙️ ATURAN GAME (GAMERULES) -->
+                                            <Border Background="#141420" CornerRadius="8" BorderBrush="#28283C" BorderThickness="1" Padding="14,12" Margin="0,0,0,12">
+                                                <StackPanel>
+                                                    <TextBlock Text="⚙️ Aturan Game (GameRules)" FontWeight="Bold" FontSize="12" Foreground="#55FF55" Margin="0,0,0,2"/>
+                                                    <TextBlock Text="Aktifkan atau matikan mekanik dan proteksi game" FontSize="10" Foreground="#8888AA" Margin="0,0,0,10"/>
+
+                                                    <!-- Sub-Group 1: Proteksi Kerusakan -->
+                                                    <Border Background="#101018" CornerRadius="6" Padding="10,8" BorderBrush="#202030" BorderThickness="1" Margin="0,0,0,10">
+                                                        <StackPanel>
+                                                            <TextBlock Text="🛡️ Proteksi Kerusakan (Damage Immunity):" FontSize="11" FontWeight="Bold" Foreground="#AAAAFF" Margin="0,0,0,6"/>
+                                                            <CheckBox x:Name="ChkFallDamage" Content="Fall Damage (Jatuh dari ketinggian)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkFireDamage" Content="Fire / Lava Damage (Terbakar)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkDrowningDamage" Content="Drowning (Tenggelam dalam air)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkFreezeDamage" Content="Freeze (Membeku di salju bubuk)" Foreground="#CCCCCC" FontSize="11" IsChecked="True"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <!-- Sub-Group 2: Keep Inventory & Respawn (Golden Card) -->
+                                                    <Border Background="#1A1810" CornerRadius="6" Padding="10,8" BorderBrush="#4A4018" BorderThickness="1" Margin="0,0,0,10">
+                                                        <StackPanel>
+                                                            <TextBlock Text="🎒 Kematian &amp; Inventaris:" FontSize="11" FontWeight="Bold" Foreground="#FFD700" Margin="0,0,0,6"/>
+                                                            <CheckBox x:Name="ChkKeepInventory" Content="⭐ Keep Inventory (Item &amp; XP tidak hilang saat mati)" Foreground="#FFFF66" FontWeight="Bold" FontSize="11" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkImmediateRespawn" Content="⚡ Instant Respawn (Langsung hidup tanpa layar mati)" Foreground="#CCCCCC" FontSize="11" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkMobGriefing" Content="💥 Mob Griefing (Creeper &amp; Enderman tidak rusak blok)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <WrapPanel Margin="0,2,0,0">
+                                                                <CheckBox x:Name="ChkMobLoot" Content="Mob Loot" Foreground="#CCCCCC" FontSize="10" IsChecked="True" Width="100" Margin="0,0,4,3"/>
+                                                                <CheckBox x:Name="ChkTileDrops" Content="Block Drops" Foreground="#CCCCCC" FontSize="10" IsChecked="True" Width="100" Margin="0,0,4,3"/>
+                                                                <CheckBox x:Name="ChkEntityDrops" Content="Entity Drops" Foreground="#CCCCCC" FontSize="10" IsChecked="True" Width="100" Margin="0,0,0,3"/>
+                                                            </WrapPanel>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <!-- Sub-Group 3: Dunia & Mob -->
+                                                    <Border Background="#101018" CornerRadius="6" Padding="10,8" BorderBrush="#202030" BorderThickness="1" Margin="0,0,0,10">
+                                                        <StackPanel>
+                                                            <TextBlock Text="🌍 Lingkungan &amp; Monster:" FontSize="11" FontWeight="Bold" Foreground="#88FF88" Margin="0,0,0,6"/>
+                                                            <CheckBox x:Name="ChkMobSpawning" Content="🧟 Spawn Monster &amp; Hewan Alami" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkNaturalRegen" Content="💖 Natural Regeneration (Regen darah dari kenyang)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkPvp" Content="⚔️ PVP (Damage Antar Pemain)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkShowCoordinates" Content="📍 Tampilkan Koordinat di Layar" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkTntExplodes" Content="💣 TNT Meledak (TNT Explodes)" Foreground="#CCCCCC" FontSize="11" IsChecked="True" Margin="0,0,0,5"/>
+                                                            <CheckBox x:Name="ChkShowDaysPlayed" Content="📅 Tampilkan Hari Dimainkan di Layar" Foreground="#CCCCCC" FontSize="11" IsChecked="True"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <!-- Sub-Group 4: Kecepatan & Persentase -->
+                                                    <Grid Margin="0,0,0,4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="8"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="Random Tick Speed (Tanaman):" FontSize="10" Foreground="#8888AA" Margin="0,0,0,2"/>
+                                                            <TextBox x:Name="TxtRandomTickSpeed" Height="26" Padding="6,2" Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF" Text="1"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2">
+                                                            <TextBlock Text="Sleeping % (Lewati Malam):" FontSize="10" Foreground="#8888AA" Margin="0,0,0,2"/>
+                                                            <TextBox x:Name="TxtSleepingPercent" Height="26" Padding="6,2" Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF" Text="100"/>
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                    <!-- Sub-Group 5: Cheats Toggles -->
+                                                    <Border Height="1" Background="#242436" Margin="0,8,0,8"/>
+                                                    <TextBlock Text="Kontrol Cheat &amp; Perintah:" FontSize="10" FontWeight="SemiBold" Foreground="#8888AA" Margin="0,0,0,4"/>
+                                                    <WrapPanel>
+                                                        <CheckBox x:Name="ChkCheatsEnabled" Content="Cheats Enabled" Width="140" Margin="0,0,0,2" Foreground="#CCCCCC" FontSize="11"/>
+                                                        <CheckBox x:Name="ChkCommandsEnabled" Content="Commands Enabled" Width="150" Margin="0,0,0,2" Foreground="#CCCCCC" FontSize="11"/>
+                                                    </WrapPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
                     </TabControl>
                 </Border>
             </Grid>
