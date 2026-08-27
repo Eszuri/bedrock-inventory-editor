@@ -387,6 +387,14 @@ public partial class ItemEditorDialog : Window
             if (lvl < 1) lvl = 1;
             var origLvl = _initialEnchantments.TryGetValue(selectedEnch.Id, out var oLvl) ? (short?)oLvl : null;
 
+            // Remove any mutually exclusive / conflicting enchantments already on this item
+            var incompIds = BedrockEnchantments.GetIncompatibleEnchantmentIds(selectedEnch.Id, _workingItem.Id);
+            var conflictingEntries = WorkingEnchantments.Where(en => incompIds.Contains(en.Id)).ToList();
+            foreach (var conf in conflictingEntries)
+            {
+                WorkingEnchantments.Remove(conf);
+            }
+
             var existing = WorkingEnchantments.FirstOrDefault(en => en.Id == selectedEnch.Id);
             if (existing != null)
             {
@@ -426,7 +434,8 @@ public partial class ItemEditorDialog : Window
             return;
         }
 
-        var validEnchants = BedrockEnchantments.GetCompatibleEnchantments(rawId);
+        var currentEnchantIds = WorkingEnchantments.Select(e => e.Id).ToList();
+        var validEnchants = BedrockEnchantments.GetCompatibleEnchantments(rawId, currentEnchantIds);
 
         if (validEnchants.Count == 0)
         {

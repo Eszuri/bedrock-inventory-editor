@@ -117,23 +117,25 @@ public partial class ItemStack : ObservableObject
 
         item.Count = tag.GetByte("Count", 1);
 
-        // Read Damage from root tag or inner tag (Bedrock & Java compatibility)
+        // Read Damage strictly from root tag
         int dmg = -1;
         if (tag.ContainsKey("Damage")) dmg = tag.GetNumeric("Damage", -1);
         if (dmg < 0 && tag.ContainsKey("damage")) dmg = tag.GetNumeric("damage", -1);
         if (dmg < 0 && tag.ContainsKey("Aux")) dmg = tag.GetNumeric("Aux", -1);
-
-        var innerTag = tag.GetCompound("tag");
-        if (dmg <= 0 && innerTag != null)
-        {
-            if (innerTag.ContainsKey("Damage")) dmg = innerTag.GetNumeric("Damage", 0);
-            else if (innerTag.ContainsKey("damage")) dmg = innerTag.GetNumeric("damage", 0);
-        }
+        if (dmg < 0) dmg = 0;
 
         item.Damage = (short)Math.Max(0, dmg);
 
+        var innerTag = tag.GetCompound("tag");
         if (innerTag != null)
         {
+            // CRITICAL: In Bedrock, Damage/Aux must NEVER be inside the 'tag' compound.
+            // Clean up any legacy or corrupt inner damage tags.
+            innerTag.Remove("Damage");
+            innerTag.Remove("damage");
+            innerTag.Remove("Aux");
+            innerTag.Remove("aux");
+
             item.ExtraNbt = innerTag.Clone() as NbtCompound;
 
             // Enchantments
@@ -185,19 +187,11 @@ public partial class ItemStack : ObservableObject
         // Build or reuse inner tag
         NbtCompound innerTag = ExtraNbt?.Clone() as NbtCompound ?? new NbtCompound("tag");
 
-        // Synchronize damage with inner tag so Bedrock engine never reads old damage
-        if (Damage == 0)
-        {
-            innerTag.Remove("Damage");
-            innerTag.Remove("damage");
-            innerTag.Remove("Aux");
-            innerTag.Remove("aux");
-        }
-        else
-        {
-            if (innerTag.ContainsKey("Damage")) innerTag.SetShort("Damage", Damage);
-            if (innerTag.ContainsKey("damage")) innerTag.SetShort("damage", Damage);
-        }
+        // CRITICAL FOR BEDROCK: Damage must NEVER be inside 'tag'.
+        innerTag.Remove("Damage");
+        innerTag.Remove("damage");
+        innerTag.Remove("Aux");
+        innerTag.Remove("aux");
 
         // Update Enchantments
         if (Enchantments.Count > 0)
