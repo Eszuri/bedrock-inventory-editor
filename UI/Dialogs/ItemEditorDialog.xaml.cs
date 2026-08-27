@@ -19,6 +19,7 @@ public partial class ItemEditorDialog : Window
     private bool _isInitialized = false;
     private bool _isUpdatingDurability = false;
     private bool _isInternalSearchChange = false;
+    private readonly Dictionary<short, short> _initialEnchantments = new();
 
     public ObservableCollection<EnchantmentEntry> WorkingEnchantments { get; } = [];
 
@@ -41,10 +42,12 @@ public partial class ItemEditorDialog : Window
             CmbEnchantments.SelectedIndex = 0;
         }
 
-        // Setup Working Collections
+        // Setup Working Collections & record initial state
+        _initialEnchantments.Clear();
         foreach (var ench in _workingItem.Enchantments)
         {
-            WorkingEnchantments.Add(new EnchantmentEntry(ench.Id, ench.Name, ench.Level));
+            _initialEnchantments[ench.Id] = ench.Level;
+            WorkingEnchantments.Add(new EnchantmentEntry(ench.Id, ench.Name, ench.Level, originalLevel: ench.Level));
         }
         LstEnchantments.ItemsSource = WorkingEnchantments;
 
@@ -56,6 +59,7 @@ public partial class ItemEditorDialog : Window
 
         UpdateDurabilityDisplay();
         UpdateLivePreview();
+        UpdateDiffSummary();
     }
 
     private void OnItemSearchTextChanged(object sender, TextChangedEventArgs e)
@@ -380,19 +384,22 @@ public partial class ItemEditorDialog : Window
         if (CmbEnchantments.SelectedItem is EnchantmentInfo selectedEnch &&
             short.TryParse(TxtEnchantLevel.Text, out var lvl))
         {
+            if (lvl < 1) lvl = 1;
+            var origLvl = _initialEnchantments.TryGetValue(selectedEnch.Id, out var oLvl) ? (short?)oLvl : null;
+
             var existing = WorkingEnchantments.FirstOrDefault(en => en.Id == selectedEnch.Id);
             if (existing != null)
             {
-                existing.Level = lvl;
                 var idx = WorkingEnchantments.IndexOf(existing);
-                WorkingEnchantments[idx] = new EnchantmentEntry(existing.Id, existing.Name, lvl);
+                WorkingEnchantments[idx] = new EnchantmentEntry(existing.Id, existing.Name, lvl, origLvl);
             }
             else
             {
-                WorkingEnchantments.Add(new EnchantmentEntry(selectedEnch.Id, selectedEnch.Name, lvl));
+                WorkingEnchantments.Add(new EnchantmentEntry(selectedEnch.Id, selectedEnch.Name, lvl, origLvl));
             }
 
             UpdateLivePreview();
+            UpdateDiffSummary();
         }
     }
 
@@ -402,6 +409,7 @@ public partial class ItemEditorDialog : Window
         {
             WorkingEnchantments.Remove(entry);
             UpdateLivePreview();
+            UpdateDiffSummary();
         }
     }
 
@@ -435,10 +443,58 @@ public partial class ItemEditorDialog : Window
         WorkingEnchantments.Clear();
         foreach (var (info, lvl) in validEnchants)
         {
-            WorkingEnchantments.Add(new EnchantmentEntry(info.Id, info.Name, lvl));
+            var origLvl = _initialEnchantments.TryGetValue(info.Id, out var oLvl) ? (short?)oLvl : null;
+            WorkingEnchantments.Add(new EnchantmentEntry(info.Id, info.Name, lvl, origLvl));
         }
 
         UpdateLivePreview();
+        UpdateDiffSummary();
+    }
+
+    private void UpdateDiffSummary()
+    {
+        var newCount = WorkingEnchantments.Count(e => e.IsNew);
+        var modCount = WorkingEnchantments.Count(e => e.HasLevelChange);
+        var remCount = _initialEnchantments.Keys.Count(origId => !WorkingEnchantments.Any(we => we.Id == origId));
+
+        if (newCount > 0 || modCount > 0 || remCount > 0)
+        {
+            PnlDiffSummary.Visibility = Visibility.Visible;
+
+            if (newCount > 0)
+            {
+                TxtDiffNew.Text = $"+{newCount} Baru";
+                BadgeDiffNew.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                BadgeDiffNew.Visibility = Visibility.Collapsed;
+            }
+
+            if (modCount > 0)
+            {
+                TxtDiffMod.Text = $"~{modCount} Diubah";
+                BadgeDiffMod.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                BadgeDiffMod.Visibility = Visibility.Collapsed;
+            }
+
+            if (remCount > 0)
+            {
+                TxtDiffRem.Text = $"-{remCount} Dihapus";
+                BadgeDiffRem.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                BadgeDiffRem.Visibility = Visibility.Collapsed;
+            }
+        }
+        else
+        {
+            PnlDiffSummary.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void OnClearSlotClick(object sender, RoutedEventArgs e)
@@ -455,6 +511,7 @@ public partial class ItemEditorDialog : Window
 
         UpdateLivePreview();
         UpdateDurabilityDisplay();
+        UpdateDiffSummary();
     }
 
     private void OnSaveClick(object sender, RoutedEventArgs e)

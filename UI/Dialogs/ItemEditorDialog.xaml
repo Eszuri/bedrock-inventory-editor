@@ -21,6 +21,7 @@
         <converters:ItemIconConverter x:Key="ItemIcon"/>
         <converters:CountToVisibilityConverter x:Key="CountToVis"/>
         <converters:EmptyToVisibilityConverter x:Key="EmptyToVis"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
         <!-- Modern Button Style -->
         <Style TargetType="Button">
@@ -269,6 +270,7 @@
                         <RowDefinition Height="Auto"/> <!-- Title & Max Button -->
                         <RowDefinition Height="Auto"/> <!-- Add Enchantment Row -->
                         <RowDefinition Height="*"/>    <!-- Added Enchantments List -->
+                        <RowDefinition Height="Auto"/> <!-- Before-After Diff Summary Banner -->
                     </Grid.RowDefinitions>
 
                     <!-- Title & Max Button -->
@@ -289,28 +291,88 @@
                         <Button Grid.Column="2" Content="+ Pasang" Padding="10,4" FontWeight="Bold" Background="#254A25" BorderBrush="#4CAF50" Click="OnAddEnchantmentClick"/>
                     </Grid>
 
-                    <!-- Active Enchantments List -->
+                    <!-- Active Enchantments List with Before/After Diff Styling -->
                     <Border Grid.Row="2" Background="#121218" CornerRadius="6" BorderBrush="#2A2A3A" BorderThickness="1" Padding="4">
                         <ListBox x:Name="LstEnchantments" Background="Transparent" BorderThickness="0">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1C1C28" CornerRadius="4" Padding="8,6" Margin="0,0,0,4" BorderBrush="#2E2E40" BorderThickness="1">
+                                    <Border CornerRadius="5" Padding="8,6" Margin="0,0,0,4" BorderThickness="1">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#1C1C28"/>
+                                                <Setter Property="BorderBrush" Value="#2E2E40"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsNew}" Value="True">
+                                                        <Setter Property="Background" Value="#13241A"/>
+                                                        <Setter Property="BorderBrush" Value="#2A6B3D"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding HasLevelChange}" Value="True">
+                                                        <Setter Property="Background" Value="#291E12"/>
+                                                        <Setter Property="BorderBrush" Value="#805520"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
-                                            <Border Grid.Column="1" Background="#3B1C4C" BorderBrush="#9C4EC2" BorderThickness="1" CornerRadius="4" Padding="8,2" Margin="8,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding LevelDisplay}" Foreground="#F0C0FF" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
-                                            </Border>
+                                            
+                                            <!-- Enchantment Name & Before Subtitle -->
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#FFFFFF" FontSize="12"/>
+                                                <TextBlock Text="{Binding ChangeTag}" FontSize="9" FontWeight="Bold" Foreground="#FFAA00" Margin="0,1,0,0" Visibility="{Binding HasLevelChange, Converter={StaticResource BoolToVis}}"/>
+                                            </StackPanel>
+
+                                            <!-- Dynamic Level Badges (Before / After) -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0">
+                                                
+                                                <!-- 1. Unchanged Badge (Purple) -->
+                                                <Border Background="#3B1C4C" BorderBrush="#9C4EC2" BorderThickness="1" CornerRadius="4" Padding="8,2" Visibility="{Binding IsUnchanged, Converter={StaticResource BoolToVis}}">
+                                                    <TextBlock Text="{Binding LevelDisplay}" Foreground="#F0C0FF" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                                </Border>
+
+                                                <!-- 2. Modified Badge (Amber/Orange Lvl 1 -> Lvl 5) -->
+                                                <Border Background="#45270F" BorderBrush="#FF9A24" BorderThickness="1" CornerRadius="4" Padding="7,2" Visibility="{Binding HasLevelChange, Converter={StaticResource BoolToVis}}">
+                                                    <TextBlock Text="{Binding LevelChangeText}" Foreground="#FFD278" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                                </Border>
+
+                                                <!-- 3. New Badge (Green + BARU tag) -->
+                                                <StackPanel Orientation="Horizontal" Visibility="{Binding IsNew, Converter={StaticResource BoolToVis}}">
+                                                    <Border Background="#183D25" BorderBrush="#3DB868" BorderThickness="1" CornerRadius="4" Padding="7,2" Margin="0,0,4,0">
+                                                        <TextBlock Text="{Binding LevelDisplay}" Foreground="#86EFAC" FontWeight="Bold" FontSize="11"/>
+                                                    </Border>
+                                                    <Border Background="#225934" BorderBrush="#4ADE80" BorderThickness="1" CornerRadius="3" Padding="4,1">
+                                                        <TextBlock Text="+ BARU" Foreground="#4ADE80" FontWeight="ExtraBold" FontSize="9" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <!-- Remove Button -->
                                             <Button Grid.Column="2" Content="✕" Width="24" Height="24" Padding="0" Background="#4A1E1E" BorderBrush="#8A2E2E" Tag="{Binding}" Click="OnRemoveEnchantmentClick"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+                    </Border>
+
+                    <!-- Row 3: Before-After Diff Summary Banner -->
+                    <Border x:Name="PnlDiffSummary" Grid.Row="3" Background="#14141E" CornerRadius="6" BorderBrush="#2E2E42" BorderThickness="1" Padding="8,6" Margin="0,6,0,0" Visibility="Collapsed">
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="Perubahan:" FontWeight="Bold" FontSize="11" Foreground="#8888AA" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <Border x:Name="BadgeDiffNew" Background="#142C1E" BorderBrush="#2E804E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
+                                <TextBlock x:Name="TxtDiffNew" Text="+1 Baru" Foreground="#4ADE80" FontSize="10" FontWeight="Bold"/>
+                            </Border>
+                            <Border x:Name="BadgeDiffMod" Background="#352410" BorderBrush="#9E621E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
+                                <TextBlock x:Name="TxtDiffMod" Text="~1 Diubah" Foreground="#FBBF24" FontSize="10" FontWeight="Bold"/>
+                            </Border>
+                            <Border x:Name="BadgeDiffRem" Background="#361717" BorderBrush="#8A2E2E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
+                                <TextBlock x:Name="TxtDiffRem" Text="-1 Dihapus" Foreground="#F87171" FontSize="10" FontWeight="Bold"/>
+                            </Border>
+                        </DockPanel>
                     </Border>
                 </Grid>
             </Border>
