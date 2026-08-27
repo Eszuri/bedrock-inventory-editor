@@ -20,9 +20,9 @@
     <Window.Resources>
         <!-- Modern Buttons -->
         <Style TargetType="Button">
-            <Setter Property="Background" Value="#252532"/>
+            <Setter Property="Background" Value="#222230"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#424256"/>
+            <Setter Property="BorderBrush" Value="#38384C"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -33,7 +33,7 @@
                         <Border Background="{TemplateBinding Background}" 
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="4"
+                                CornerRadius="6"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -42,7 +42,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#38384C"/>
+                    <Setter Property="Background" Value="#323246"/>
                     <Setter Property="BorderBrush" Value="#55FF55"/>
                 </Trigger>
             </Style.Triggers>
@@ -85,197 +85,311 @@
     </Window.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Top Toolbar -->
-            <RowDefinition Height="*"/>    <!-- Main Body -->
-            <RowDefinition Height="Auto"/> <!-- Status Bar -->
-        </Grid.RowDefinitions>
+        <!-- ========================================== -->
+        <!-- 1. HOME VIEW (MINIMAL STARTUP SCREEN)     -->
+        <!-- ========================================== -->
+        <Grid x:Name="ViewHome" Visibility="Visible" Background="#121216">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <!-- TOP TOOLBAR (Clean, Free Folder World Editing) -->
-        <Border Grid.Row="0" Background="#181822" BorderBrush="#2A2A3A" BorderThickness="0,0,0,1" Padding="14,10">
-            <DockPanel LastChildFill="True">
-                <!-- Left Buttons: Open Folder / .mcworld / Recent Worlds -->
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
-                    <Button Content="📂 Buka Folder Bebas..." Margin="0,0,8,0" Padding="14,7" ToolTip="Pilih folder world Bedrock mana pun di drive Anda (C:, D:, USB, Dedicated Server)" Click="OnOpenFolderClick"/>
-                    <Button Content="📦 Buka .mcworld..." Margin="0,0,16,0" Padding="14,7" ToolTip="Buka file paket world .mcworld langsung" Click="OnOpenMcWorldClick"/>
-
-                    <!-- Recent Worlds Dropdown -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
-                        <TextBlock Text="🕒 Riwayat World:" VerticalAlignment="Center" Foreground="#FFAA00" Margin="0,0,8,0" FontSize="13" FontWeight="SemiBold"/>
-                        <ComboBox x:Name="CmbRecentWorlds" Width="360" Height="34" SelectionChanged="OnRecentWorldSelectionChanged"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Right Button: Save to LevelDB -->
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                    <Button Content="💾 Simpan ke LevelDB" Background="#1E6B23" BorderBrush="#4CAF50" FontWeight="Bold" Padding="18,6" Foreground="#FFFFFF" Click="OnSaveToWorldClick"/>
-                </StackPanel>
-            </DockPanel>
-        </Border>
-
-        <!-- MAIN BODY -->
-        <Grid Grid.Row="1" Margin="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260"/> <!-- Left Panel: Armor & Info -->
-                <ColumnDefinition Width="16"/>  <!-- Spacer -->
-                <ColumnDefinition Width="*"/>   <!-- Right Panel: Inventory & Ender Chest -->
-            </Grid.ColumnDefinitions>
-
-            <!-- LEFT PANEL: Armor, Offhand, Info -->
-            <Border Grid.Column="0" Background="#181822" CornerRadius="8" BorderBrush="#2A2A3A" BorderThickness="1" Padding="14">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <!-- World Summary Badge -->
-                        <Border Background="#20202E" CornerRadius="6" Padding="12" Margin="0,0,0,14" BorderBrush="#323246" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="WORLD AKTIF" FontSize="10" FontWeight="Bold" Foreground="#8888AA"/>
-                                <TextBlock x:Name="TxtActiveWorldName" Text="Belum ada world dimuat" FontSize="15" FontWeight="Bold" Foreground="#FFAA00" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                <TextBlock x:Name="TxtPlayerKey" Text="Key: ~local_player" FontSize="11" Foreground="#777799" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="ARMOR &amp; OFFHAND" FontWeight="Bold" FontSize="12" Foreground="#55FF55" Margin="0,0,0,10"/>
-
-                        <!-- Equipment Slots Grid -->
-                        <Grid HorizontalAlignment="Center" Margin="0,0,0,14">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="14"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Armor Slots (Column 0) -->
-                            <controls:InventorySlotControl x:Name="SlotHelmet" Grid.Row="0" Grid.Column="0" Margin="0,0,0,6"/>
-                            <controls:InventorySlotControl x:Name="SlotChestplate" Grid.Row="1" Grid.Column="0" Margin="0,0,0,6"/>
-                            <controls:InventorySlotControl x:Name="SlotLeggings" Grid.Row="2" Grid.Column="0" Margin="0,0,0,6"/>
-                            <controls:InventorySlotControl x:Name="SlotBoots" Grid.Row="3" Grid.Column="0" Margin="0,0,0,0"/>
-
-                            <!-- Offhand Slot (Column 2) -->
-                            <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Center">
-                                <TextBlock Text="Offhand" FontSize="10" FontWeight="SemiBold" Foreground="#AAAAAA" HorizontalAlignment="Center" Margin="0,0,0,3"/>
-                                <controls:InventorySlotControl x:Name="SlotOffhand"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Quick Guide Card -->
-                        <Border Background="#121218" CornerRadius="6" Padding="10" BorderBrush="#252535" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="💡 Petunjuk Singkat:" FontWeight="Bold" FontSize="11" Foreground="#AAAAFF" Margin="0,0,0,4"/>
-                                <TextBlock Text="• Drag &amp; Drop folder world / file .mcworld ke jendela ini." FontSize="10" Foreground="#8888AA" TextWrapping="Wrap" Margin="0,0,0,2"/>
-                                <TextBlock Text="• Klik kiri pada slot mana pun untuk mengedit item atau enchantment." FontSize="10" Foreground="#8888AA" TextWrapping="Wrap" Margin="0,0,0,2"/>
-                                <TextBlock Text="• Pastikan Minecraft ditutup sebelum menyimpan." FontSize="10" Foreground="#8888AA" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-
-            <!-- RIGHT PANEL: Main Inventory & Ender Chest Tabs -->
-            <Border Grid.Column="2" Background="#181822" CornerRadius="8" BorderBrush="#2A2A3A" BorderThickness="1" Padding="14">
-                <TabControl Background="Transparent" BorderThickness="0">
+            <!-- Centered Welcome Hub -->
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel MaxWidth="960" Margin="24,32" HorizontalAlignment="Center" VerticalAlignment="Center">
                     
-                    <!-- TAB 1: PLAYER INVENTORY & HOTBAR -->
-                    <TabItem Header="🎒 Tas &amp; Hotbar Pemain">
-                        <Grid Margin="0,14,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/> <!-- Main Bag Label -->
-                                <RowDefinition Height="Auto"/> <!-- Main Bag Grid (3x9) -->
-                                <RowDefinition Height="Auto"/> <!-- Separator / Hotbar Label -->
-                                <RowDefinition Height="Auto"/> <!-- Hotbar Grid (1x9) -->
-                            </Grid.RowDefinitions>
+                    <!-- App Logo & Branding Header -->
+                    <StackPanel HorizontalAlignment="Center" Margin="0,0,0,28">
+                        <Image Source="Assets/app_icon.png" Width="60" Height="60" HorizontalAlignment="Center" Margin="0,0,0,10" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                        <TextBlock Text="Minecraft Bedrock Inventory Editor" FontSize="25" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Editor inventaris, perlengkapan armor, dan ender chest asli Windows Native." FontSize="13" Foreground="#8888AA" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
 
-                            <!-- Main Bag Header -->
-                            <TextBlock Grid.Row="0" Text="Tas Utama (Main Inventory • 27 Slot)" FontWeight="Bold" FontSize="12" Foreground="#BBBBCC" Margin="0,0,0,8"/>
+                    <!-- 2-Column Hub Layout: Quick Actions & Recent Worlds -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="1.2*"/>
+                        </Grid.ColumnDefinitions>
 
-                            <!-- Main Bag ItemsControl (3 Rows x 9 Columns) -->
-                            <Border Grid.Row="1" Background="#121218" CornerRadius="6" Padding="8" BorderBrush="#282838" BorderThickness="1" HorizontalAlignment="Left">
-                                <ItemsControl x:Name="ItemsBag">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <UniformGrid Rows="3" Columns="9"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <controls:InventorySlotControl Margin="2"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                        <!-- LEFT COLUMN: Open Options & Drag Drop Area -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="📂 PILIH WORLD" FontSize="11" FontWeight="Bold" Foreground="#55FF55" Margin="0,0,0,10"/>
+
+                            <!-- Button 1: Open World Folder -->
+                            <Button Margin="0,0,0,10" Padding="14,12" HorizontalContentAlignment="Left" Background="#181824" BorderBrush="#2A2A3E" Click="OnOpenFolderClick">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="40" Height="40" Background="#202032" CornerRadius="6" Margin="0,0,12,0">
+                                        <TextBlock Text="📁" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Buka Folder World..." FontSize="14" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                        <TextBlock Text="Pilih folder save world Bedrock di drive mana pun (C:, D:, USB, BDS)" FontSize="11" Foreground="#8888AA" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <!-- Button 2: Open .mcworld Package -->
+                            <Button Margin="0,0,0,12" Padding="14,12" HorizontalContentAlignment="Left" Background="#181824" BorderBrush="#2A2A3E" Click="OnOpenMcWorldClick">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="40" Height="40" Background="#2A2218" CornerRadius="6" Margin="0,0,12,0">
+                                        <TextBlock Text="📦" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Buka File .mcworld..." FontSize="14" FontWeight="Bold" Foreground="#FFAA00"/>
+                                        <TextBlock Text="Buka langsung file arsip paket world .mcworld atau .zip" FontSize="11" Foreground="#8888AA" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <!-- Drop Zone Banner -->
+                            <Border Background="#151520" BorderBrush="#2A2A3E" BorderThickness="1" CornerRadius="6" Padding="12,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="📥" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Seret &amp; Lepas (Drag &amp; Drop)" FontWeight="Bold" FontSize="12" Foreground="#AAAAFF"/>
+                                        <TextBlock Text="Tarik folder world atau file .mcworld ke jendela ini untuk langsung membukanya." FontSize="10" Foreground="#777799" TextWrapping="Wrap" Margin="0,1,0,0"/>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
+                        </StackPanel>
 
-                            <!-- Hotbar Header -->
-                            <TextBlock Grid.Row="2" Text="Hotbar Cepat (1x9 Slot)" FontWeight="Bold" FontSize="12" Foreground="#FFAA00" Margin="0,16,0,8"/>
-
-                            <!-- Hotbar ItemsControl (1 Row x 9 Columns) -->
-                            <Border Grid.Row="3" Background="#121218" CornerRadius="6" Padding="8" BorderBrush="#282838" BorderThickness="1" HorizontalAlignment="Left">
-                                <ItemsControl x:Name="ItemsHotbar">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <UniformGrid Rows="1" Columns="9"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <controls:InventorySlotControl Margin="2"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                        <!-- RIGHT COLUMN: Recent Worlds List -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="🕒 RIWAYAT WORLD TERAKHIR" FontSize="11" FontWeight="Bold" Foreground="#55FFFF" Margin="0,0,0,10"/>
+                            
+                            <Border Background="#181824" CornerRadius="8" BorderBrush="#2A2A3E" BorderThickness="1" Padding="12" MinHeight="228">
+                                <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="PnlRecentWorldsList"/>
+                                </ScrollViewer>
                             </Border>
-                        </Grid>
-                    </TabItem>
+                        </StackPanel>
+                    </Grid>
 
-                    <!-- TAB 2: ENDER CHEST -->
-                    <TabItem Header="👁️ Ender Chest">
-                        <Grid Margin="0,14,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                </StackPanel>
+            </ScrollViewer>
 
-                            <TextBlock Grid.Row="0" Text="Inventaris Ender Chest (27 Slot)" FontWeight="Bold" FontSize="12" Foreground="#BBBBCC" Margin="0,0,0,8"/>
-
-                            <Border Grid.Row="1" Background="#121218" CornerRadius="6" Padding="8" BorderBrush="#282838" BorderThickness="1" HorizontalAlignment="Left">
-                                <ItemsControl x:Name="ItemsEnderChest">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <UniformGrid Rows="3" Columns="9"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <controls:InventorySlotControl Margin="2"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Border>
-                        </Grid>
-                    </TabItem>
-
-                </TabControl>
+            <!-- Home Status Bar -->
+            <Border Grid.Row="1" Background="#101014" BorderBrush="#22222E" BorderThickness="0,1,0,0" Padding="16,8">
+                <DockPanel LastChildFill="True">
+                    <Border DockPanel.Dock="Right" Background="#1C281C" BorderBrush="#2E5A2E" BorderThickness="1" CornerRadius="4" Padding="7,2">
+                        <TextBlock Text="v1.0" Foreground="#55FF55" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Siap. Silakan buka folder world atau pilih dari riwayat untuk memulai." Foreground="#8888AA" FontSize="11" VerticalAlignment="Center"/>
+                </DockPanel>
             </Border>
         </Grid>
 
-        <!-- STATUS BAR -->
-        <Border Grid.Row="2" Background="#101014" BorderBrush="#22222E" BorderThickness="0,1,0,0" Padding="14,6">
-            <DockPanel LastChildFill="True">
-                <!-- Right: Version Badge & Loaded Path -->
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtLoadedPath" Text="" Foreground="#666688" FontSize="11" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <Border Background="#1C281C" BorderBrush="#2E5A2E" BorderThickness="1" CornerRadius="4" Padding="7,2" ToolTip="Versi Resmi 1.0 (Production Release)">
-                        <TextBlock Text="v1.0" Foreground="#55FF55" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
-                    </Border>
-                </StackPanel>
 
-                <!-- Left: Status Message -->
-                <TextBlock x:Name="TxtStatus" Text="Silakan buka folder world, pilih dari riwayat, atau drag &amp; drop ke jendela." Foreground="#9999BB" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-            </DockPanel>
-        </Border>
+        <!-- ========================================== -->
+        <!-- 2. EDITOR VIEW (FULL ACTIVE WORKSPACE)    -->
+        <!-- ========================================== -->
+        <Grid x:Name="ViewEditor" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Top Toolbar -->
+                <RowDefinition Height="*"/>    <!-- Main Body -->
+                <RowDefinition Height="Auto"/> <!-- Status Bar -->
+            </Grid.RowDefinitions>
 
+            <!-- TOP TOOLBAR -->
+            <Border Grid.Row="0" Background="#181822" BorderBrush="#2A2A3A" BorderThickness="0,0,0,1" Padding="14,10">
+                <DockPanel LastChildFill="True">
+                    <!-- Left: Home / Switch World -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                        <Button Content="🏠 Kembali ke Home" Margin="0,0,8,0" Padding="12,6" Background="#2A2A3C" BorderBrush="#4A4A62" Click="OnBackToHomeClick"/>
+                        <Button Content="📂 Ganti World..." Margin="0,0,14,0" Padding="12,6" Click="OnOpenFolderClick"/>
+
+                        <!-- World & Player Key Indicator -->
+                        <Border Background="#20202E" CornerRadius="4" BorderBrush="#323246" BorderThickness="1" Padding="10,4" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="World: " Foreground="#8888AA" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="TxtToolbarWorldName" Text="World Aktif" Foreground="#55FF55" FontWeight="Bold" FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Right Button: Save to LevelDB -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                        <Button Content="💾 Simpan ke LevelDB" Background="#1E6B23" BorderBrush="#4CAF50" FontWeight="Bold" Padding="18,7" Foreground="#FFFFFF" Click="OnSaveToWorldClick"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- MAIN BODY -->
+            <Grid Grid.Row="1" Margin="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260"/> <!-- Left Panel: Armor & Info -->
+                    <ColumnDefinition Width="16"/>  <!-- Spacer -->
+                    <ColumnDefinition Width="*"/>   <!-- Right Panel: Inventory & Ender Chest -->
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT PANEL: Armor, Offhand, Info -->
+                <Border Grid.Column="0" Background="#181822" CornerRadius="8" BorderBrush="#2A2A3A" BorderThickness="1" Padding="14">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- World Summary Badge -->
+                            <Border Background="#20202E" CornerRadius="6" Padding="12" Margin="0,0,0,14" BorderBrush="#323246" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="WORLD AKTIF" FontSize="10" FontWeight="Bold" Foreground="#8888AA"/>
+                                    <TextBlock x:Name="TxtActiveWorldName" Text="Belum ada world dimuat" FontSize="15" FontWeight="Bold" Foreground="#FFAA00" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="TxtPlayerKey" Text="Key: ~local_player" FontSize="11" Foreground="#777799" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="ARMOR &amp; OFFHAND" FontWeight="Bold" FontSize="12" Foreground="#55FF55" Margin="0,0,0,10"/>
+
+                            <!-- Equipment Slots Grid -->
+                            <Grid HorizontalAlignment="Center" Margin="0,0,0,14">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Armor Slots (Column 0) -->
+                                <controls:InventorySlotControl x:Name="SlotHelmet" Grid.Row="0" Grid.Column="0" Margin="0,0,0,6"/>
+                                <controls:InventorySlotControl x:Name="SlotChestplate" Grid.Row="1" Grid.Column="0" Margin="0,0,0,6"/>
+                                <controls:InventorySlotControl x:Name="SlotLeggings" Grid.Row="2" Grid.Column="0" Margin="0,0,0,6"/>
+                                <controls:InventorySlotControl x:Name="SlotBoots" Grid.Row="3" Grid.Column="0" Margin="0,0,0,0"/>
+
+                                <!-- Offhand Slot (Column 2) -->
+                                <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock Text="Offhand" FontSize="10" FontWeight="SemiBold" Foreground="#AAAAAA" HorizontalAlignment="Center" Margin="0,0,0,3"/>
+                                    <controls:InventorySlotControl x:Name="SlotOffhand"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Quick Guide Card -->
+                            <Border Background="#121218" CornerRadius="6" Padding="10" BorderBrush="#252535" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Petunjuk:" FontWeight="Bold" FontSize="11" Foreground="#AAAAFF" Margin="0,0,0,4"/>
+                                    <TextBlock Text="• Klik slot mana pun untuk mengedit item, jumlah, durabilitas, nama, dan enchantment." FontSize="10" Foreground="#8888AA" TextWrapping="Wrap" Margin="0,0,0,3"/>
+                                    <TextBlock Text="• Pastikan Minecraft ditutup sebelum menyimpan." FontSize="10" Foreground="#8888AA" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- RIGHT PANEL: Main Inventory & Ender Chest Tabs -->
+                <Border Grid.Column="2" Background="#181822" CornerRadius="8" BorderBrush="#2A2A3A" BorderThickness="1" Padding="14">
+                    <TabControl Background="Transparent" BorderThickness="0">
+                        
+                        <!-- TAB 1: PLAYER INVENTORY & HOTBAR -->
+                        <TabItem Header="🎒 Tas &amp; Hotbar Pemain">
+                            <Grid Margin="0,14,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- Main Bag Label -->
+                                    <RowDefinition Height="Auto"/> <!-- Main Bag Grid (3x9) -->
+                                    <RowDefinition Height="Auto"/> <!-- Separator / Hotbar Label -->
+                                    <RowDefinition Height="Auto"/> <!-- Hotbar Grid (1x9) -->
+                                </Grid.RowDefinitions>
+
+                                <!-- Main Bag Header -->
+                                <TextBlock Grid.Row="0" Text="Tas Utama (Main Inventory • 27 Slot)" FontWeight="Bold" FontSize="12" Foreground="#BBBBCC" Margin="0,0,0,8"/>
+
+                                <!-- Main Bag ItemsControl (3 Rows x 9 Columns) -->
+                                <Border Grid.Row="1" Background="#121218" CornerRadius="6" Padding="8" BorderBrush="#282838" BorderThickness="1" HorizontalAlignment="Left">
+                                    <ItemsControl x:Name="ItemsBag">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="3" Columns="9"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <controls:InventorySlotControl Margin="2"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+
+                                <!-- Hotbar Header -->
+                                <TextBlock Grid.Row="2" Text="Hotbar Cepat (1x9 Slot)" FontWeight="Bold" FontSize="12" Foreground="#FFAA00" Margin="0,16,0,8"/>
+
+                                <!-- Hotbar ItemsControl (1 Row x 9 Columns) -->
+                                <Border Grid.Row="3" Background="#121218" CornerRadius="6" Padding="8" BorderBrush="#282838" BorderThickness="1" HorizontalAlignment="Left">
+                                    <ItemsControl x:Name="ItemsHotbar">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="1" Columns="9"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <controls:InventorySlotControl Margin="2"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+
+                        <!-- TAB 2: ENDER CHEST -->
+                        <TabItem Header="👁️ Ender Chest">
+                            <Grid Margin="0,14,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Inventaris Ender Chest (27 Slot)" FontWeight="Bold" FontSize="12" Foreground="#BBBBCC" Margin="0,0,0,8"/>
+
+                                <Border Grid.Row="1" Background="#121218" CornerRadius="6" Padding="8" BorderBrush="#282838" BorderThickness="1" HorizontalAlignment="Left">
+                                    <ItemsControl x:Name="ItemsEnderChest">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="3" Columns="9"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <controls:InventorySlotControl Margin="2"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+
+                    </TabControl>
+                </Border>
+            </Grid>
+
+            <!-- STATUS BAR -->
+            <Border Grid.Row="2" Background="#101014" BorderBrush="#22222E" BorderThickness="0,1,0,0" Padding="14,6">
+                <DockPanel LastChildFill="True">
+                    <!-- Right: Version Badge & Loaded Path -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtLoadedPath" Text="" Foreground="#666688" FontSize="11" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <Border Background="#1C281C" BorderBrush="#2E5A2E" BorderThickness="1" CornerRadius="4" Padding="7,2" ToolTip="Versi Resmi 1.0 (Production Release)">
+                            <TextBlock Text="v1.0" Foreground="#55FF55" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Left: Status Message -->
+                    <TextBlock x:Name="TxtStatus" Text="Siap mengedit inventaris." Foreground="#9999BB" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                </DockPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
