@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:BedrockInventoryEditor.UI.Controls"
         mc:Ignorable="d"
-        Title="Minecraft Bedrock Inventory Editor (Windows Native)" 
+        Title="Minecraft Bedrock Inventory Editor v1.0" 
         Icon="Assets/app_icon.png"
         Height="740" Width="1240"
         MinHeight="680" MinWidth="1080"
@@ -263,9 +263,17 @@
 
         <!-- STATUS BAR -->
         <Border Grid.Row="2" Background="#101014" BorderBrush="#22222E" BorderThickness="0,1,0,0" Padding="14,6">
-            <DockPanel LastChildFill="False">
-                <TextBlock x:Name="TxtStatus" Text="Siap. Silakan buka folder world, pilih dari riwayat, atau drag &amp; drop ke jendela." Foreground="#8888AA" FontSize="11" VerticalAlignment="Center" DockPanel.Dock="Left"/>
-                <TextBlock x:Name="TxtLoadedPath" Text="" Foreground="#555577" FontSize="10" VerticalAlignment="Center" DockPanel.Dock="Right"/>
+            <DockPanel LastChildFill="True">
+                <!-- Right: Version Badge & Loaded Path -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtLoadedPath" Text="" Foreground="#666688" FontSize="11" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <Border Background="#1C281C" BorderBrush="#2E5A2E" BorderThickness="1" CornerRadius="4" Padding="7,2" ToolTip="Versi Resmi 1.0 (Production Release)">
+                        <TextBlock Text="v1.0" Foreground="#55FF55" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Left: Status Message -->
+                <TextBlock x:Name="TxtStatus" Text="Silakan buka folder world, pilih dari riwayat, atau drag &amp; drop ke jendela." Foreground="#9999BB" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
             </DockPanel>
         </Border>
 
