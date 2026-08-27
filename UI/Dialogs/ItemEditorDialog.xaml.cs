@@ -407,18 +407,35 @@ public partial class ItemEditorDialog : Window
 
     private void OnMaxValidEnchantsClick(object sender, RoutedEventArgs e)
     {
-        WorkingEnchantments.Clear();
-        foreach (var ench in BedrockEnchantments.All)
+        var rawId = TxtItemSearch?.Text?.Trim() ?? string.Empty;
+        if (string.IsNullOrEmpty(rawId) || rawId == "minecraft:air")
         {
-            var lvl = ench.MaxVanillaLevel switch
-            {
-                "V" => (short)5,
-                "IV" => (short)4,
-                "III" => (short)3,
-                "II" => (short)2,
-                _ => (short)1
-            };
-            WorkingEnchantments.Add(new EnchantmentEntry(ench.Id, ench.Name, lvl));
+            MessageBox.Show(this, 
+                "Slot ini kosong. Silakan pilih item terlebih dahulu sebelum memasang enchantment.", 
+                "Slot Kosong", 
+                MessageBoxButton.OK, 
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var validEnchants = BedrockEnchantments.GetCompatibleEnchantments(rawId);
+
+        if (validEnchants.Count == 0)
+        {
+            var itemName = BedrockItemRegistry.Items.FirstOrDefault(i => i.Id.Equals(rawId, StringComparison.OrdinalIgnoreCase) || i.Id.Equals("minecraft:" + rawId, StringComparison.OrdinalIgnoreCase))?.DisplayName ?? rawId;
+
+            MessageBox.Show(this,
+                $"Item '{itemName}' tidak memiliki enchantment bawaan (vanilla) yang kompatibel secara otomatis.\n\nNamun, Anda tetap dapat menambahkan enchantment apa pun secara manual melalui menu dropdown di bawah lalu klik tombol '+ Pasang'.",
+                "Info Kompatibilitas Enchantment",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        WorkingEnchantments.Clear();
+        foreach (var (info, lvl) in validEnchants)
+        {
+            WorkingEnchantments.Add(new EnchantmentEntry(info.Id, info.Name, lvl));
         }
 
         UpdateLivePreview();
