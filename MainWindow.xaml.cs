@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using BedrockInventoryEditor.Core.Models;
 using BedrockInventoryEditor.Core.Nbt;
+using BedrockInventoryEditor.Core.Registry;
 using BedrockInventoryEditor.Core.Storage;
 using BedrockInventoryEditor.UI.Controls;
 using BedrockInventoryEditor.UI.Dialogs;
@@ -22,15 +25,28 @@ public partial class MainWindow : Window
     private string _currentPlayerKey = "~local_player";
     private bool _hasRootHeader = true;
     private bool _hasUnsavedChanges = false;
+    private bool _isInitialized = false;
     private List<RecentWorldEntry> _recentWorlds = [];
+
+    private double _playerPosX = 0;
+    private double _playerPosY = 64;
+    private double _playerPosZ = 0;
+    private int _playerDimId = 0;
+
+    private List<BlockEntityContainer> _allLoadedContainers = [];
+    private readonly ObservableCollection<BlockEntityContainer> _displayedContainers = [];
+    private readonly HashSet<BlockEntityContainer> _modifiedContainers = [];
+    private BlockEntityContainer? _selectedContainer;
 
     public MainWindow()
     {
         InitializeComponent();
 
         SetupInventoryBindings();
+        LstNearbyContainers.ItemsSource = _displayedContainers;
         AddHandler(InventorySlotControl.SlotClickedEvent, new RoutedEventHandler(OnInventorySlotEdited));
         ShowHomeView();
+        _isInitialized = true;
     }
 
     private void SetupInventoryBindings()
@@ -58,6 +74,12 @@ public partial class MainWindow : Window
     {
         _hasUnsavedChanges = true;
         TxtStatus.Text = "Ada perubahan belum disimpan (*)";
+
+        if (_selectedContainer != null)
+        {
+            _modifiedContainers.Add(_selectedContainer);
+            _selectedContainer.NotifySlotsChanged();
+        }
     }
 
     public void ShowHomeView()
@@ -350,11 +372,22 @@ public partial class MainWindow : Window
         _currentFullPlayerNbt = nbt;
         _inventory.LoadFromPlayerNbt(_currentFullPlayerNbt);
         _hasUnsavedChanges = false;
+        _modifiedContainers.Clear();
+
+        // Extract player position and dimension
+        var (px, py, pz, pDim) = BedrockWorldService.GetPlayerPosition(_currentFullPlayerNbt);
+        _playerPosX = px;
+        _playerPosY = py;
+        _playerPosZ = pz;
+        _playerDimId = pDim;
+
+        // Load Nearby Containers
+        LoadContainersForCurrentSettings();
 
         // Record in Recent Worlds History
         RecentWorldsService.AddRecentWorld(inputPath, worldName);
 
-        TxtStatus.Text = $"Berhasil memuat world '{worldName}' (Player: {_currentPlayerKey}).";
+        TxtStatus.Text = $"Berhasil memuat world '{worldName}' (Player: {_currentPlayerKey}, Pos: {px:F0}, {py:F0}, {pz:F0}).";
 
         // Transition from Home to Editor view
         ShowEditorView();
@@ -415,11 +448,35 @@ public partial class MainWindow : Window
                 return false;
             }
 
+            // Also save modified containers if any
+            if (_modifiedContainers.Count > 0)
+            {
+                var (cSuccess, _, cError) = BedrockWorldService.SaveBlockEntityContainers(
+                    _currentWorldPath, 
+                    _modifiedContainers, 
+                    createBackup: false
+                );
+
+                if (!cSuccess || cError != null)
+                {
+                    MessageBox.Show(
+                        $"Inventaris pemain berhasil disimpan, namun terjadi kendala saat menyimpan data container:\n{cError}",
+                        "Peringatan Penyimpanan Container",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                }
+                else
+                {
+                    _modifiedContainers.Clear();
+                }
+            }
+
             _hasUnsavedChanges = false;
 
             var msg = shouldBackup && !string.IsNullOrEmpty(backupPath)
-                ? $"Perubahan inventaris berhasil disimpan langsung ke database LevelDB!\n\n📦 Backup dibuat di:\n{backupPath}"
-                : "Perubahan inventaris berhasil disimpan langsung ke database LevelDB!";
+                ? $"Perubahan inventaris dan container berhasil disimpan langsung ke database LevelDB!\n\n📦 Backup dibuat di:\n{backupPath}"
+                : "Perubahan inventaris dan container berhasil disimpan langsung ke database LevelDB!";
 
             MessageBox.Show(
                 msg,
@@ -436,6 +493,142 @@ public partial class MainWindow : Window
             MessageBox.Show($"Terjadi error saat proses simpan:\n{ex.Message}", "Error Fatal", MessageBoxButton.OK, MessageBoxImage.Error);
             return false;
         }
+    }
+
+    private void LoadContainersForCurrentSettings()
+    {
+        if (string.IsNullOrEmpty(_currentWorldPath)) return;
+
+        double radius = 64.0;
+        if (CmbContainerRadius?.SelectedItem is ComboBoxItem item)
+        {
+            var text = item.Content?.ToString() ?? "";
+            if (text.Contains("32")) radius = 32.0;
+            else if (text.Contains("64")) radius = 64.0;
+            else if (text.Contains("128")) radius = 128.0;
+            else if (text.Contains("256")) radius = 256.0;
+            else if (text.Contains("500")) radius = 500.0;
+        }
+
+        TxtStatus.Text = $"Memindai container di sekitar (Radius: {radius:0}m)...";
+
+        var (containers, error) = BedrockWorldService.LoadNearbyContainers(
+            _currentWorldPath, 
+            _playerPosX, 
+            _playerPosY, 
+            _playerPosZ, 
+            _playerDimId, 
+            radius
+        );
+
+        if (error != null)
+        {
+            TxtStatus.Text = $"Gagal memindai container: {error}";
+            return;
+        }
+
+        _allLoadedContainers = containers;
+        ApplyContainerFilter();
+
+        TxtStatus.Text = $"Berhasil memindai {_allLoadedContainers.Count} container di sekitar pemain.";
+    }
+
+    private void ApplyContainerFilter()
+    {
+        var category = (CmbContainerType?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Semua Tipe";
+        var query = TxtSearchContainers?.Text?.Trim() ?? string.Empty;
+
+        IEnumerable<BlockEntityContainer> filtered = _allLoadedContainers;
+
+        if (!category.StartsWith("Semua"))
+        {
+            if (category.Contains("Peti & Tong")) filtered = filtered.Where(c => c.TypeId == "Chest" || c.TypeId == "Barrel");
+            else if (category.Contains("Shulker")) filtered = filtered.Where(c => c.TypeId == "ShulkerBox");
+            else if (category.Contains("Pemasak")) filtered = filtered.Where(c => c.TypeId == "Furnace" || c.TypeId == "BlastFurnace" || c.TypeId == "Smoker" || c.TypeId == "Campfire" || c.TypeId == "SoulCampfire");
+            else if (category.Contains("Redstone")) filtered = filtered.Where(c => c.TypeId == "Dispenser" || c.TypeId == "Dropper" || c.TypeId == "Hopper" || c.TypeId == "Crafter");
+            else filtered = filtered.Where(c => c.ContainerCategory == "Dekorasi & Buku" || c.ContainerCategory == "Lainnya" || c.ContainerCategory == "Ramuan / Brewing");
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            filtered = filtered.Where(c => 
+                c.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                c.CoordinatesText.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                c.TypeId.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                c.Slots.Any(s => !s.IsEmpty && (s.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) || s.Id.Contains(query, StringComparison.OrdinalIgnoreCase)))
+            );
+        }
+
+        _displayedContainers.Clear();
+        foreach (var c in filtered)
+        {
+            _displayedContainers.Add(c);
+        }
+
+        TxtContainerCount.Text = $"{_displayedContainers.Count} Container Ditemukan";
+        PnlNoContainers.Visibility = _displayedContainers.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        // Auto select first container if available and none selected
+        if (_displayedContainers.Count > 0)
+        {
+            if (_selectedContainer == null || !_displayedContainers.Contains(_selectedContainer))
+            {
+                LstNearbyContainers.SelectedIndex = 0;
+            }
+        }
+        else
+        {
+            SelectContainer(null);
+        }
+    }
+
+    private void OnContainerSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (LstNearbyContainers.SelectedItem is BlockEntityContainer selected)
+        {
+            SelectContainer(selected);
+        }
+    }
+
+    private void SelectContainer(BlockEntityContainer? container)
+    {
+        _selectedContainer = container;
+        if (container != null)
+        {
+            TxtSelectedContainerName.Text = container.DisplayName;
+            TxtSelectedContainerDim.Text = container.DimensionName;
+            TxtSelectedContainerCoords.Text = $"Koordinat: {container.CoordinatesText} • Jarak: {container.DistanceText}";
+            ImgSelectedContainer.Source = ItemTextureService.GetItemImage(container.BlockId);
+
+            ItemsContainerSlots.Tag = container;
+            ItemsContainerSlots.ItemsSource = container.Slots;
+        }
+        else
+        {
+            TxtSelectedContainerName.Text = "Pilih container untuk melihat isi";
+            TxtSelectedContainerDim.Text = "-";
+            TxtSelectedContainerCoords.Text = "Koordinat: -";
+            ImgSelectedContainer.Source = null;
+            ItemsContainerSlots.Tag = null;
+            ItemsContainerSlots.ItemsSource = null;
+        }
+    }
+
+    private void OnContainerFilterChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_isInitialized) return;
+        LoadContainersForCurrentSettings();
+    }
+
+    private void OnContainerSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!_isInitialized) return;
+        ApplyContainerFilter();
+    }
+
+    private void OnRescanContainersClick(object sender, RoutedEventArgs e)
+    {
+        LoadContainersForCurrentSettings();
     }
 
     protected override void OnClosing(CancelEventArgs e)

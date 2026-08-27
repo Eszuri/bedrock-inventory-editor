@@ -29,6 +29,38 @@ public class BedrockNbtReader
         return res;
     }
 
+    public static System.Collections.Generic.List<NbtCompound> ReadMultipleCompounds(byte[] data)
+    {
+        var result = new System.Collections.Generic.List<NbtCompound>();
+        if (data == null || data.Length == 0) return result;
+
+        using var ms = new MemoryStream(data);
+        var reader = new BedrockNbtReader(ms);
+
+        while (ms.Position < ms.Length)
+        {
+            var startPos = ms.Position;
+            try
+            {
+                var compound = reader.ReadRootCompound();
+                if (compound != null && compound.Count > 0)
+                {
+                    result.Add(compound);
+                }
+                else
+                {
+                    if (ms.Position <= startPos) break;
+                }
+            }
+            catch
+            {
+                break;
+            }
+        }
+
+        return result;
+    }
+
     public NbtCompound ReadRootCompound()
     {
         if (_reader.BaseStream.Position >= _reader.BaseStream.Length)

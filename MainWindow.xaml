@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:BedrockInventoryEditor.UI.Controls"
+        xmlns:converters="clr-namespace:BedrockInventoryEditor.UI.Converters"
         mc:Ignorable="d"
         Title="Minecraft Bedrock Inventory Editor v1.0" 
         Icon="Assets/app_icon.png"
@@ -18,6 +19,11 @@
         DragOver="OnWindowDragOver">
 
     <Window.Resources>
+        <converters:ItemImageConverter x:Key="ItemImage"/>
+        <converters:EmptyToVisibilityConverter x:Key="EmptyToVis"/>
+        <converters:CountToVisibilityConverter x:Key="CountToVis"/>
+        <converters:ItemHasImageToVisibilityConverter x:Key="ItemHasImageToVis"/>
+
         <!-- Modern Buttons -->
         <Style TargetType="Button">
             <Setter Property="Background" Value="#222230"/>
@@ -368,6 +374,191 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                 </Border>
+                            </Grid>
+                        </TabItem>
+
+                        <!-- TAB 3: NEARBY CONTAINERS -->
+                        <TabItem Header="📦 Container Sekitar (Chest, Shulker, dll.)">
+                            <Grid Margin="0,10,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- Filters & Search Bar -->
+                                    <RowDefinition Height="*"/>    <!-- Master-Detail Split View -->
+                                </Grid.RowDefinitions>
+
+                                <!-- Top Filters Bar -->
+                                <Border Grid.Row="0" Background="#141420" CornerRadius="6" BorderBrush="#28283C" BorderThickness="1" Padding="10,6" Margin="0,0,0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Radius Filter -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
+                                            <TextBlock Text="Jarak:" Foreground="#8888AA" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <ComboBox x:Name="CmbContainerRadius" Width="135" Height="28" SelectionChanged="OnContainerFilterChanged">
+                                                <ComboBoxItem Content="Radius 32 Blok"/>
+                                                <ComboBoxItem Content="Radius 64 Blok" IsSelected="True"/>
+                                                <ComboBoxItem Content="Radius 128 Blok"/>
+                                                <ComboBoxItem Content="Radius 256 Blok"/>
+                                                <ComboBoxItem Content="Radius 500 Blok"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <!-- Type Filter -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
+                                            <TextBlock Text="Tipe:" Foreground="#8888AA" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <ComboBox x:Name="CmbContainerType" Width="145" Height="28" SelectionChanged="OnContainerFilterChanged">
+                                                <ComboBoxItem Content="Semua Tipe" IsSelected="True"/>
+                                                <ComboBoxItem Content="Peti &amp; Tong"/>
+                                                <ComboBoxItem Content="Shulker Box"/>
+                                                <ComboBoxItem Content="Pemasak &amp; Tungku"/>
+                                                <ComboBoxItem Content="Redstone &amp; Mekanik"/>
+                                                <ComboBoxItem Content="Dekorasi &amp; Lainnya"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <!-- Search Box -->
+                                        <TextBox x:Name="TxtSearchContainers" Grid.Column="2" Height="28" Margin="0,0,8,0" Padding="8,4" 
+                                                 Background="#1A1A28" BorderBrush="#35354C" Foreground="#FFFFFF"
+                                                 TextChanged="OnContainerSearchTextChanged"
+                                                 ToolTip="Cari nama peti, koordinat (X, Z), atau nama item di dalam wadah"/>
+
+                                        <!-- Refresh Button -->
+                                        <Button x:Name="BtnRescanContainers" Grid.Column="3" Content="🔄 Pindai" Padding="12,4" FontWeight="Bold" Background="#222238" BorderBrush="#3E3E58" Click="OnRescanContainersClick"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Master-Detail Content -->
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="270"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- LEFT: Container Selector List -->
+                                    <Border Grid.Column="0" Background="#12121A" CornerRadius="6" BorderBrush="#252536" BorderThickness="1" Padding="6">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+
+                                            <DockPanel Grid.Row="0" Margin="4,2,4,6">
+                                                <TextBlock x:Name="TxtContainerCount" Text="0 Container Ditemukan" FontSize="11" FontWeight="Bold" Foreground="#FFAA00" VerticalAlignment="Center"/>
+                                            </DockPanel>
+
+                                            <!-- Containers ListBox -->
+                                            <ListBox x:Name="LstNearbyContainers" Grid.Row="1" Background="Transparent" BorderThickness="0"
+                                                     SelectionChanged="OnContainerSelectionChanged"
+                                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                     ScrollViewer.CanContentScroll="True"
+                                                     VirtualizingStackPanel.IsVirtualizing="True"
+                                                     VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="#1A1A26" CornerRadius="6" Padding="8,6" Margin="0,0,0,4" BorderBrush="#2C2C3E" BorderThickness="1">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- Icon -->
+                                                                <Border Grid.Column="0" Width="30" Height="30" Background="#14141E" CornerRadius="4" Margin="0,0,8,0">
+                                                                    <Image Source="{Binding BlockId, Converter={StaticResource ItemImage}}" 
+                                                                           Width="22" Height="22" 
+                                                                           HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                                           RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                                                </Border>
+
+                                                                <!-- Info -->
+                                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                                                    <TextBlock Text="{Binding CoordinatesText}" FontSize="9" Foreground="#8888AA" Margin="0,1,0,0"/>
+                                                                </StackPanel>
+
+                                                                <!-- Distance Badge -->
+                                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                                    <Border Background="#203426" BorderBrush="#356E46" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,0,2">
+                                                                        <TextBlock Text="{Binding DistanceText}" FontSize="9" FontWeight="Bold" Foreground="#55FF55"/>
+                                                                    </Border>
+                                                                    <TextBlock Text="{Binding FilledSlotsText}" FontSize="9" Foreground="#FFAA00" HorizontalAlignment="Right"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+
+                                            <!-- Empty State -->
+                                            <Border x:Name="PnlNoContainers" Grid.Row="1" Background="#14141E" CornerRadius="6" Padding="14" VerticalAlignment="Center" Margin="8" Visibility="Collapsed">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                                    <TextBlock Text="Tidak ada container ditemukan." FontWeight="Bold" FontSize="11" Foreground="#FFAA00" TextAlignment="Center" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="Coba perbesar radius atau ubah filter pencarian." FontSize="10" Foreground="#8888AA" TextAlignment="Center" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- RIGHT: Selected Container Slot Grid -->
+                                    <Border Grid.Column="2" Background="#12121A" CornerRadius="6" BorderBrush="#252536" BorderThickness="1" Padding="10">
+                                        <Grid x:Name="PnlSelectedContainer">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/> <!-- Header Info -->
+                                                <RowDefinition Height="*"/>    <!-- Slots Grid Area -->
+                                                <RowDefinition Height="Auto"/> <!-- Footer Tip -->
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Header Info -->
+                                            <Border Grid.Row="0" Background="#181826" CornerRadius="6" BorderBrush="#2D2D40" BorderThickness="1" Padding="10,7" Margin="0,0,0,10">
+                                                <DockPanel LastChildFill="True">
+                                                    <Border DockPanel.Dock="Left" Width="32" Height="32" Background="#12121C" CornerRadius="4" Margin="0,0,10,0">
+                                                        <Image x:Name="ImgSelectedContainer" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                                    </Border>
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <DockPanel>
+                                                            <TextBlock x:Name="TxtSelectedContainerName" Text="Pilih container untuk melihat isi" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF"/>
+                                                            <Border x:Name="BadgeContainerDim" Background="#242436" CornerRadius="3" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                                <TextBlock x:Name="TxtSelectedContainerDim" Text="Overworld" FontSize="9" FontWeight="Bold" Foreground="#55FFFF"/>
+                                                            </Border>
+                                                        </DockPanel>
+                                                        <TextBlock x:Name="TxtSelectedContainerCoords" Text="Koordinat: -" FontSize="10" Foreground="#8888AA" Margin="0,2,0,0"/>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+
+                                            <!-- Slots Grid Area -->
+                                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                                <Border Background="#0E0E14" CornerRadius="6" Padding="6" BorderBrush="#222230" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                    <ItemsControl x:Name="ItemsContainerSlots">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <UniformGrid Rows="{Binding Tag.GridRows, RelativeSource={RelativeSource AncestorType=ItemsControl}, FallbackValue=3}"
+                                                                             Columns="{Binding Tag.GridColumns, RelativeSource={RelativeSource AncestorType=ItemsControl}, FallbackValue=9}"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <controls:InventorySlotControl Margin="2"/>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Border>
+                                            </ScrollViewer>
+
+                                            <!-- Footer Tip -->
+                                            <Border Grid.Row="2" Background="#161622" CornerRadius="6" BorderBrush="#262638" BorderThickness="1" Padding="10,6" Margin="0,8,0,0">
+                                                <TextBlock Text="💡 Klik slot mana pun untuk mengedit item, jumlah, durabilitas, atau enchantment di wadah ini." FontSize="10" Foreground="#8888AA" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
                             </Grid>
                         </TabItem>
 

@@ -16,7 +16,8 @@ public enum SlotLocation
     ArmorLeggings,
     ArmorBoots,
     Offhand,
-    EnderChest
+    EnderChest,
+    Container
 }
 
 public partial class ItemStack : ObservableObject
@@ -172,9 +173,9 @@ public partial class ItemStack : ObservableObject
         return item;
     }
 
-    public NbtCompound ToNbt()
+    public NbtCompound ToNbt(string tagName = "")
     {
-        var tag = new NbtCompound();
+        var tag = new NbtCompound(tagName);
         tag.SetByte("Slot", Slot);
         tag.SetString("Name", Id);
         tag.SetByte("Count", Count);
@@ -268,5 +269,20 @@ public partial class ItemStack : ObservableObject
         }
 
         return tag;
+    }
+
+    public static void CopyProperties(ItemStack source, ItemStack dest)
+    {
+        dest.Id = source.Id;
+        dest.Count = source.Count;
+        dest.Damage = source.Damage;
+        dest.CustomName = source.CustomName;
+        dest.ExtraNbt = source.ExtraNbt;
+
+        dest.Lore.Clear();
+        foreach (var l in source.Lore) dest.Lore.Add(l);
+
+        dest.Enchantments.Clear();
+        foreach (var e in source.Enchantments) dest.Enchantments.Add(new EnchantmentEntry(e.Id, e.Name, e.Level));
     }
 }

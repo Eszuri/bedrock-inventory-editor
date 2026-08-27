@@ -35,6 +35,16 @@ public static class ItemTextureService
             var candidates = new[]
             {
                 $"{name}.png",
+                name == "chest" || name == "double_chest" ? "chest_inventory_front.png" : null,
+                name == "ender_chest" ? "ender_chest_inventory_front.png" : null,
+                name == "trapped_chest" ? "trapped_chest_inventory_front.png" : null,
+                name == "dispenser" ? "dispenser_front_horizontal.png" : null,
+                name == "dropper" ? "dropper_front_horizontal.png" : null,
+                name == "blast_furnace" ? "blast_furnace_front_off.png" : null,
+                name == "smoker" ? "smoker_front_off.png" : null,
+                name == "chiseled_bookshelf" ? "chiseled_bookshelf_side.png" : null,
+                name == "lectern" ? "lectern_top.png" : null,
+                name == "jukebox" ? "jukebox_top.png" : null,
                 name == "shield" ? "shield_base.png" : null,
                 name == "scute" ? "turtle_scute.png" : null,
                 name == "potion_bottle_drinkable" ? "potion.png" : null,

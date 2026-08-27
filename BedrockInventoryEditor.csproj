@@ -31,4 +31,11 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="BedrockInventoryEditor.Tests\**" />
+    <EmbeddedResource Remove="BedrockInventoryEditor.Tests\**" />
+    <None Remove="BedrockInventoryEditor.Tests\**" />
+    <Page Remove="BedrockInventoryEditor.Tests\**" />
+  </ItemGroup>
+
 </Project>

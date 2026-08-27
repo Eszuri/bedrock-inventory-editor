@@ -28,6 +28,17 @@ public class BedrockNbtWriter
         return ms.ToArray();
     }
 
+    public static byte[] WriteMultipleCompounds(System.Collections.Generic.IEnumerable<NbtCompound> compounds, bool includeRootHeader = true)
+    {
+        using var ms = new MemoryStream();
+        foreach (var compound in compounds)
+        {
+            var bytes = WriteToBytes(compound, includeRootHeader);
+            ms.Write(bytes, 0, bytes.Length);
+        }
+        return ms.ToArray();
+    }
+
     public void WriteRootCompound(NbtCompound compound)
     {
         _writer.Write((byte)NbtTagType.Compound);
