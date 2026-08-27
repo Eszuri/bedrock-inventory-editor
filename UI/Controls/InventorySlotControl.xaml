@@ -115,6 +115,11 @@
                                    Margin="0,0,8,0" 
                                    RenderOptions.BitmapScalingMode="NearestNeighbor"
                                    Visibility="{Binding Id, Converter={StaticResource HasImageToVis}}"/>
+                            <TextBlock Text="{Binding Id, Converter={StaticResource ItemIcon}}" 
+                                       FontSize="18" 
+                                       Margin="0,0,8,0" 
+                                       VerticalAlignment="Center" 
+                                       Visibility="{Binding Id, Converter={StaticResource HasImageToVis}, ConverterParameter=Invert}"/>
                             <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="14" Foreground="#FFAA00" VerticalAlignment="Center"/>
                         </StackPanel>
                         

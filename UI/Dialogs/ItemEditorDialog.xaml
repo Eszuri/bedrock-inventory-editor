@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Title="Edit Item Slot - Minecraft Bedrock" 
         Icon="/Assets/app_icon.png"
-        Height="510" Width="760"
-        MinHeight="460" MinWidth="680"
+        Height="520" Width="780"
+        MinHeight="480" MinWidth="700"
         WindowStartupLocation="CenterOwner"
         Background="#121216" 
         Foreground="#FFFFFF"
@@ -123,14 +123,109 @@
             <!-- LEFT COLUMN: Item Identity & Properties -->
             <Border Grid.Column="0" Background="#181822" CornerRadius="8" Padding="14" BorderBrush="#2A2A3A" BorderThickness="1">
                 <StackPanel VerticalAlignment="Top">
-                    <!-- 1. Item ID Selector -->
-                    <TextBlock Text="ID Item (Minecraft Identifier)" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" Margin="0,0,0,4"/>
-                    <ComboBox x:Name="CmbItems" 
-                              IsEditable="True" 
-                              TextBoxBase.TextChanged="OnItemSearchChanged"
-                              SelectionChanged="OnItemSelectionChanged"
-                              Height="32" 
-                              Margin="0,0,0,10"/>
+                    
+                    <!-- 1. Item ID Selector with Rich AutoComplete Popup -->
+                    <TextBlock Text="Pilih / Cari ID Item (Minecraft Identifier)" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Search Input TextBox -->
+                        <TextBox x:Name="TxtItemSearch" 
+                                 Grid.Column="0"
+                                 Height="32" 
+                                 Padding="8,5" 
+                                 FontSize="12"
+                                 Background="#14141E"
+                                 Foreground="#FFFFFF"
+                                 BorderBrush="#38384C"
+                                 TextChanged="OnItemSearchTextChanged"
+                                 PreviewKeyDown="OnItemSearchPreviewKeyDown"
+                                 GotFocus="OnItemSearchGotFocus"/>
+
+                        <!-- Dropdown Toggle Button -->
+                        <Button Grid.Column="1" 
+                                Content="▼" 
+                                Width="30" 
+                                Height="32" 
+                                Padding="0" 
+                                FontSize="10"
+                                Background="#20202E" 
+                                BorderBrush="#38384C" 
+                                Click="OnToggleSuggestionsClick"/>
+
+                        <!-- Rich AutoComplete Popup -->
+                        <Popup x:Name="PopupSuggestions" 
+                               PlacementTarget="{Binding ElementName=TxtItemSearch}" 
+                               Placement="Bottom" 
+                               StaysOpen="False" 
+                               AllowsTransparency="True">
+                            <Border Background="#161622" 
+                                    BorderBrush="#3A3A52" 
+                                    BorderThickness="1" 
+                                    CornerRadius="6" 
+                                    Width="360" 
+                                    MaxHeight="260" 
+                                    Padding="4">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="4" Opacity="0.8"/>
+                                </Border.Effect>
+                                <ListBox x:Name="LstSuggestions" 
+                                         Background="Transparent" 
+                                         BorderThickness="0" 
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                         ScrollViewer.CanContentScroll="True"
+                                         VirtualizingStackPanel.IsVirtualizing="True"
+                                         VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                         SelectionChanged="OnSuggestionSelected"
+                                         PreviewKeyDown="OnSuggestionsPreviewKeyDown">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="6,4" CornerRadius="4">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Texture Icon -->
+                                                    <Border Grid.Column="0" Width="30" Height="30" Background="#1E1E2C" CornerRadius="4" Margin="0,0,10,0">
+                                                        <Grid>
+                                                            <Image Source="{Binding Id, Converter={StaticResource ItemImage}}" 
+                                                                   Width="24" Height="24" 
+                                                                   HorizontalAlignment="Center" 
+                                                                   VerticalAlignment="Center" 
+                                                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                                   Visibility="{Binding Id, Converter={StaticResource HasImageToVis}}"/>
+                                                            <TextBlock Text="{Binding Icon}" 
+                                                                       FontSize="16" 
+                                                                       HorizontalAlignment="Center" 
+                                                                       VerticalAlignment="Center" 
+                                                                       Visibility="{Binding Id, Converter={StaticResource HasImageToVis}, ConverterParameter=Invert}"/>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Display Name & ID -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding Id}" FontSize="10" Foreground="#8888AA" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+
+                                                    <!-- Category Badge -->
+                                                    <Border Grid.Column="2" Background="#222234" BorderBrush="#35354A" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Margin="6,0,0,0">
+                                                        <TextBlock Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="#FFAA00"/>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
+                    </Grid>
 
                     <!-- 2. Count (Jumlah Item) -->
                     <TextBlock Text="Jumlah Item (Count)" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" Margin="0,0,0,4"/>
@@ -199,18 +294,20 @@
                         <ListBox x:Name="LstEnchantments" Background="Transparent" BorderThickness="0">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="4,3">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#77AAFF" VerticalAlignment="Center" FontSize="13"/>
-                                        <Border Grid.Column="1" Background="#281A38" BorderBrush="#663388" BorderThickness="1" CornerRadius="3" Padding="6,1" Margin="0,0,8,0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Level, StringFormat='Level {0}'}" Foreground="#FFAAFF" FontWeight="Bold" FontSize="12"/>
-                                        </Border>
-                                        <Button Grid.Column="2" Content="✕" Padding="6,2" FontSize="10" Background="#4A1E1E" BorderBrush="#7A2E2E" Click="OnRemoveEnchantmentItem"/>
-                                    </Grid>
+                                    <Border Background="#1C1C28" CornerRadius="4" Padding="8,6" Margin="0,0,0,4" BorderBrush="#2E2E40" BorderThickness="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1" Background="#3B1C4C" BorderBrush="#9C4EC2" BorderThickness="1" CornerRadius="4" Padding="8,2" Margin="8,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding LevelDisplay}" Foreground="#F0C0FF" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                            </Border>
+                                            <Button Grid.Column="2" Content="✕" Width="24" Height="24" Padding="0" Background="#4A1E1E" BorderBrush="#8A2E2E" Tag="{Binding}" Click="OnRemoveEnchantmentClick"/>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
@@ -219,13 +316,12 @@
             </Border>
         </Grid>
 
-        <!-- 3. BOTTOM ACTION BAR -->
-        <Border Grid.Row="2" Background="#181822" CornerRadius="8" Padding="12" BorderBrush="#2A2A3A" BorderThickness="1">
-            <DockPanel LastChildFill="False">
-                <Button Content="Batal" Width="100" DockPanel.Dock="Left" Padding="14,7" Click="OnCancelClick"/>
-                <Button Content="💾 Simpan Item" Width="140" Background="#1E6B23" BorderBrush="#4CAF50" FontWeight="Bold" DockPanel.Dock="Right" Padding="16,7" Foreground="#FFFFFF" Click="OnSaveClick"/>
-            </DockPanel>
+        <!-- 3. BOTTOM ACTIONS: SAVE & CANCEL -->
+        <Border Grid.Row="2" Padding="0,4,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Batal" Width="90" Margin="0,0,10,0" Click="OnCancelClick"/>
+                <Button Content="Terapkan ke Slot" Background="#1E6B23" BorderBrush="#4CAF50" FontWeight="Bold" Padding="18,6" Click="OnSaveClick"/>
+            </StackPanel>
         </Border>
-
     </Grid>
 </Window>
