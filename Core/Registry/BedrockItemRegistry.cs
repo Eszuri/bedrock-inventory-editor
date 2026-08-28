@@ -997,9 +997,9 @@ public static class BedrockItemRegistry
         new("minecraft:bamboo_shelf", "Bamboo Shelf", "Blocks", "📦"),
         new("minecraft:crimson_shelf", "Crimson Shelf", "Blocks", "📦"),
         new("minecraft:warped_shelf", "Warped Shelf", "Blocks", "📦"),
-        // === 26.0 Tiny Takeover ===
+        // === 1.26.0 Tiny Takeover ===
         new("minecraft:golden_dandelion", "Golden Dandelion", "Blocks", "🌸"),
-        // === 26.20 Chaos Cubed — Sulfur ===
+        // === 1.26.20 Chaos Cubed — Sulfur ===
         new("minecraft:sulfur_block", "Sulfur Block", "Blocks", "📦"),
         new("minecraft:polished_sulfur", "Polished Sulfur", "Blocks", "📦"),
         new("minecraft:polished_sulfur_stairs", "Polished Sulfur Stairs", "Blocks", "📦"),
@@ -1012,7 +1012,7 @@ public static class BedrockItemRegistry
         new("minecraft:chiseled_sulfur", "Chiseled Sulfur", "Blocks", "📦"),
         new("minecraft:potent_sulfur", "Potent Sulfur", "Blocks", "📦"),
         new("minecraft:sulfur_spike", "Sulfur Spike", "Blocks", "📦"),
-        // === 26.20 Chaos Cubed — Cinnabar ===
+        // === 1.26.20 Chaos Cubed — Cinnabar ===
         new("minecraft:cinnabar_block", "Cinnabar Block", "Blocks", "📦"),
         new("minecraft:polished_cinnabar", "Polished Cinnabar", "Blocks", "📦"),
         new("minecraft:polished_cinnabar_stairs", "Polished Cinnabar Stairs", "Blocks", "📦"),
@@ -1023,7 +1023,7 @@ public static class BedrockItemRegistry
         new("minecraft:cinnabar_brick_slab", "Cinnabar Brick Slab", "Blocks", "📦"),
         new("minecraft:cinnabar_brick_wall", "Cinnabar Brick Wall", "Blocks", "📦"),
         new("minecraft:chiseled_cinnabar", "Chiseled Cinnabar", "Blocks", "📦"),
-        // === 26.40 Dappled Wilds — Poplar Wood ===
+        // === 1.26.40 Dappled Wilds — Poplar Wood ===
         new("minecraft:poplar_log", "Poplar Log", "Blocks", "📦"),
         new("minecraft:stripped_poplar_log", "Stripped Poplar Log", "Blocks", "📦"),
         new("minecraft:poplar_wood", "Poplar Wood", "Blocks", "📦"),
@@ -1043,11 +1043,11 @@ public static class BedrockItemRegistry
         new("minecraft:poplar_chest_boat", "Poplar Boat with Chest", "Blocks", "📦"),
         new("minecraft:poplar_leaves", "Poplar Leaves", "Blocks", "📦"),
         new("minecraft:poplar_sapling", "Poplar Sapling", "Blocks", "📦"),
-        // === 26.40 Dappled Wilds — Flora & Decor ===
+        // === 1.26.40 Dappled Wilds — Flora & Decor ===
         new("minecraft:straw_bed", "Straw Bed", "Blocks", "📦"),
         new("minecraft:shelf_mushroom", "Shelf Mushroom", "Blocks", "📦"),
         new("minecraft:red_shrub", "Red Shrub", "Blocks", "🌿"),
-        // === 26.40 Dappled Wilds — Cushions (16) ===
+        // === 1.26.40 Dappled Wilds — Cushions (16) ===
         new("minecraft:white_cushion", "White Cushion", "Blocks", "📦"),
         new("minecraft:orange_cushion", "Orange Cushion", "Blocks", "📦"),
         new("minecraft:magenta_cushion", "Magenta Cushion", "Blocks", "📦"),
@@ -1064,7 +1064,7 @@ public static class BedrockItemRegistry
         new("minecraft:green_cushion", "Green Cushion", "Blocks", "📦"),
         new("minecraft:red_cushion", "Red Cushion", "Blocks", "📦"),
         new("minecraft:black_cushion", "Black Cushion", "Blocks", "📦"),
-        // === 26.40 Dappled Wilds — Wool Stairs (16) ===
+        // === 1.26.40 Dappled Wilds — Wool Stairs (16) ===
         new("minecraft:white_wool_stairs", "White Wool Stairs", "Blocks", "📦"),
         new("minecraft:orange_wool_stairs", "Orange Wool Stairs", "Blocks", "📦"),
         new("minecraft:magenta_wool_stairs", "Magenta Wool Stairs", "Blocks", "📦"),
@@ -1081,7 +1081,7 @@ public static class BedrockItemRegistry
         new("minecraft:green_wool_stairs", "Green Wool Stairs", "Blocks", "📦"),
         new("minecraft:red_wool_stairs", "Red Wool Stairs", "Blocks", "📦"),
         new("minecraft:black_wool_stairs", "Black Wool Stairs", "Blocks", "📦"),
-        // === 26.40 Dappled Wilds — Wool Slabs (16) ===
+        // === 1.26.40 Dappled Wilds — Wool Slabs (16) ===
         new("minecraft:white_wool_slab", "White Wool Slab", "Blocks", "📦"),
         new("minecraft:orange_wool_slab", "Orange Wool Slab", "Blocks", "📦"),
         new("minecraft:magenta_wool_slab", "Magenta Wool Slab", "Blocks", "📦"),
@@ -1098,7 +1098,7 @@ public static class BedrockItemRegistry
         new("minecraft:green_wool_slab", "Green Wool Slab", "Blocks", "📦"),
         new("minecraft:red_wool_slab", "Red Wool Slab", "Blocks", "📦"),
         new("minecraft:black_wool_slab", "Black Wool Slab", "Blocks", "📦"),
-        // === 26.40 Dappled Wilds — Concrete Stairs (16) ===
+        // === 1.26.40 Dappled Wilds — Concrete Stairs (16) ===
         new("minecraft:white_concrete_stairs", "White Concrete Stairs", "Blocks", "📦"),
         new("minecraft:orange_concrete_stairs", "Orange Concrete Stairs", "Blocks", "📦"),
         new("minecraft:magenta_concrete_stairs", "Magenta Concrete Stairs", "Blocks", "📦"),
@@ -1115,7 +1115,7 @@ public static class BedrockItemRegistry
         new("minecraft:green_concrete_stairs", "Green Concrete Stairs", "Blocks", "📦"),
         new("minecraft:red_concrete_stairs", "Red Concrete Stairs", "Blocks", "📦"),
         new("minecraft:black_concrete_stairs", "Black Concrete Stairs", "Blocks", "📦"),
-        // === 26.40 Dappled Wilds — Concrete Slabs (16) ===
+        // === 1.26.40 Dappled Wilds — Concrete Slabs (16) ===
         new("minecraft:white_concrete_slab", "White Concrete Slab", "Blocks", "📦"),
         new("minecraft:orange_concrete_slab", "Orange Concrete Slab", "Blocks", "📦"),
         new("minecraft:magenta_concrete_slab", "Magenta Concrete Slab", "Blocks", "📦"),
@@ -1633,7 +1633,7 @@ public static class BedrockItemRegistry
         new("minecraft:green_harness", "Green Harness", "Utility", "📦"),
         new("minecraft:red_harness", "Red Harness", "Utility", "📦"),
         new("minecraft:black_harness", "Black Harness", "Utility", "📦"),
-        // === 26.20 Chaos Cubed ===
+        // === 1.26.20 Chaos Cubed ===
         new("minecraft:sulfur_cube_bucket", "Bucket of Sulfur Cube", "Utility", "📦"),
     };
 

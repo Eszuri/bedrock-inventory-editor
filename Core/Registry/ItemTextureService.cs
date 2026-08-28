@@ -32,48 +32,23 @@ public static class ItemTextureService
 
         return Cache.GetOrAdd(clean, name =>
         {
+            string stripName = name;
+            if (stripName.StartsWith("item.")) stripName = stripName["item.".Length..];
+            if (stripName.StartsWith("tile.")) stripName = stripName["tile.".Length..];
+
             var candidates = new[]
             {
                 $"{name}.png",
-                name == "chest" || name == "double_chest" ? "chest_inventory_front.png" : null,
-                name == "ender_chest" ? "ender_chest_inventory_front.png" : null,
-                name == "trapped_chest" ? "trapped_chest_inventory_front.png" : null,
-                name == "dispenser" ? "dispenser_front_horizontal.png" : null,
-                name == "dropper" ? "dropper_front_horizontal.png" : null,
-                name == "blast_furnace" ? "blast_furnace_front_off.png" : null,
-                name == "smoker" ? "smoker_front_off.png" : null,
-                name == "chiseled_bookshelf" ? "chiseled_bookshelf_side.png" : null,
-                name == "lectern" ? "lectern_top.png" : null,
-                name == "jukebox" ? "jukebox_top.png" : null,
-                name == "shield" ? "shield_base.png" : null,
-                name == "scute" ? "turtle_scute.png" : null,
-                name == "potion_bottle_drinkable" ? "potion.png" : null,
-                name == "undyed_shulker_box" ? "shulker_box.png" : null,
-                name.EndsWith("_shulker_box") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "shulker_box.png" : null,
-                name.EndsWith("_bundle") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "bundle.png" : null,
-                name == "crafter" && !File.Exists(Path.Combine(TexturesDirectory, "crafter.png")) ? "crafter_top.png" : null,
-                name == "vault" && !File.Exists(Path.Combine(TexturesDirectory, "vault.png")) ? "vault_front.png" : null,
-                name == "trial_spawner" && !File.Exists(Path.Combine(TexturesDirectory, "trial_spawner.png")) ? "trial_spawner_top.png" : null,
-                name.EndsWith("_bed") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "bed.png" : null,
-                name == "straw_bed" && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "bed.png" : null,
-                name.EndsWith("_cushion") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "bed.png" : null,
-                name.EndsWith("_shelf") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "bookshelf.png" : null,
-                name.EndsWith("_harness") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "lead.png" : null,
-                name.EndsWith("_spawn_egg") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "spawn_egg.png" : null,
-                name.Contains("spear") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "trident.png" : null,
-                name.Contains("nautilus_armor") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_horse_armor.png" : null,
-                name == "eyeblossom" && !File.Exists(Path.Combine(TexturesDirectory, "eyeblossom.png")) ? "open_eyeblossom.png" : null,
-                name == "creaking_heart" && !File.Exists(Path.Combine(TexturesDirectory, "creaking_heart.png")) ? "creaking_heart_active.png" : null,
-                name == "sulfur_cube_bucket" && !File.Exists(Path.Combine(TexturesDirectory, "sulfur_cube_bucket.png")) ? "bucket.png" : null,
-                name.Contains("helmet") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_helmet.png" : null,
-                name.Contains("chestplate") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_chestplate.png" : null,
-                name.Contains("leggings") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_leggings.png" : null,
-                name.Contains("boots") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_boots.png" : null,
-                name.Contains("sword") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_sword.png" : null,
-                name.Contains("pickaxe") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_pickaxe.png" : null,
-                name.Contains("axe") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_axe.png" : null,
-                name.Contains("shovel") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_shovel.png" : null,
-                name.Contains("hoe") && !File.Exists(Path.Combine(TexturesDirectory, $"{name}.png")) ? "diamond_hoe.png" : null,
+                $"{stripName}.png",
+                stripName.StartsWith("waxed_") ? $"{stripName["waxed_".Length..]}.png" : null,
+                stripName.StartsWith("wooden_") ? $"wood_{stripName["wooden_".Length..]}.png" : null,
+                stripName.StartsWith("wood_") ? $"wooden_{stripName["wood_".Length..]}.png" : null,
+                stripName.StartsWith("golden_") ? $"gold_{stripName["golden_".Length..]}.png" : null,
+                stripName.StartsWith("gold_") ? $"golden_{stripName["gold_".Length..]}.png" : null,
+                stripName.StartsWith("darkoak_") ? $"{stripName.Replace("darkoak_", "dark_oak_")}.png" : null,
+                $"{stripName}_top.png",
+                $"{stripName}_side.png",
+                $"{stripName}_front.png",
             };
 
             foreach (var candidate in candidates)
@@ -90,11 +65,21 @@ public static class ItemTextureService
                         bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
                         bitmap.EndInit();
                         bitmap.Freeze();
+
+                        // If the texture is an animated sprite strip (e.g. 16x80, 16x512), crop to the first 1:1 square frame
+                        if (bitmap.PixelWidth > 0 && bitmap.PixelHeight > 0 && bitmap.PixelWidth != bitmap.PixelHeight)
+                        {
+                            int squareSize = Math.Min(bitmap.PixelWidth, bitmap.PixelHeight);
+                            var cropped = new CroppedBitmap(bitmap, new System.Windows.Int32Rect(0, 0, squareSize, squareSize));
+                            cropped.Freeze();
+                            return cropped;
+                        }
+
                         return bitmap;
                     }
                     catch
                     {
-                        // Fallback
+                        // Ignore and try next
                     }
                 }
             }
