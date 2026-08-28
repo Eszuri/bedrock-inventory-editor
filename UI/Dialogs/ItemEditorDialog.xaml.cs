@@ -379,6 +379,41 @@ public partial class ItemEditorDialog : Window
         TxtItemCategory.Foreground = new SolidColorBrush(Color.FromRgb(255, 170, 0));
     }
 
+    private void OnEnchantLevelPreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        e.Handled = !int.TryParse(e.Text, out _);
+    }
+
+    private void OnEnchantLevelTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (TxtEnchantLevel == null) return;
+        var text = TxtEnchantLevel.Text.Trim();
+        if (string.IsNullOrEmpty(text)) return;
+
+        if (int.TryParse(text, out var val))
+        {
+            if (val > 32767)
+            {
+                TxtEnchantLevel.Text = "32767";
+                TxtEnchantLevel.CaretIndex = TxtEnchantLevel.Text.Length;
+            }
+        }
+    }
+
+    private void OnEnchantLevelLostFocus(object sender, RoutedEventArgs e)
+    {
+        if (TxtEnchantLevel == null) return;
+        var text = TxtEnchantLevel.Text.Trim();
+        if (!int.TryParse(text, out var val) || val < 1)
+        {
+            TxtEnchantLevel.Text = "1";
+        }
+        else if (val > 32767)
+        {
+            TxtEnchantLevel.Text = "32767";
+        }
+    }
+
     private void OnAddEnchantmentClick(object sender, RoutedEventArgs e)
     {
         if (CmbEnchantments.SelectedItem is EnchantmentInfo selectedEnch &&

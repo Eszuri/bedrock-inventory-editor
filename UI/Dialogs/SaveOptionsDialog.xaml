@@ -3,46 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="Simpan Perubahan ke LevelDB" 
-        Icon="/Assets/app_icon.png"
-        Height="280" Width="480"
+        Icon="pack://application:,,,/BedrockInventoryEditor;component/Assets/app_icon.png"
+        Height="290" Width="490"
         WindowStartupLocation="CenterOwner"
-        Background="#121216" 
-        Foreground="#FFFFFF"
-        FontFamily="Segoe UI"
+        Background="#0E1117" 
+        Foreground="#F1F5F9"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
         ResizeMode="NoResize">
-
-    <Window.Resources>
-        <Style TargetType="Button">
-            <Setter Property="Background" Value="#252534"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#44445A"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="14,10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#38384E"/>
-                    <Setter Property="BorderBrush" Value="#55FF55"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -53,38 +23,40 @@
 
         <!-- TITLE -->
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Pilih Mode Penyimpanan" FontSize="16" FontWeight="Bold" Foreground="#55FF55"/>
-            <TextBlock Text="Pastikan game Minecraft sedang ditutup sebelum menyimpan." FontSize="12" Foreground="#AAAAAA" Margin="0,4,0,0"/>
+            <TextBlock Text="Pilih Mode Penyimpanan" FontSize="16" FontWeight="Bold" Foreground="#10B981"/>
+            <TextBlock Text="Pastikan game Minecraft sedang ditutup sebelum menyimpan." FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0"/>
         </StackPanel>
 
         <!-- ACTION BUTTONS -->
         <StackPanel Grid.Row="1" VerticalAlignment="Center">
             <!-- Save Directly -->
-            <Button Content="💾 Simpan Langsung (Tanpa Backup)" 
-                    Background="#1E6B23" 
-                    BorderBrush="#4CAF50" 
-                    Foreground="#FFFFFF" 
-                    FontWeight="Bold" 
-                    Margin="0,0,0,10" 
-                    Click="OnSaveDirectClick"/>
+            <ui:Button Icon="{ui:SymbolIcon Save24}"
+                       Content="Simpan Langsung (Tanpa Backup)" 
+                       Appearance="Primary" 
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Stretch"
+                       Padding="14,10"
+                       Margin="0,0,0,10" 
+                       Click="OnSaveDirectClick"/>
 
             <!-- Save with Backup -->
-            <Button Content="📦 Simpan + Buat Backup (.zip)" 
-                    Background="#1F3A5A" 
-                    BorderBrush="#3D7EAA" 
-                    Foreground="#A0D0FF" 
-                    FontWeight="Bold" 
-                    Click="OnSaveWithBackupClick"/>
+            <ui:Button Icon="{ui:SymbolIcon Archive24}"
+                       Content="Simpan + Buat Backup (.zip)" 
+                       Appearance="Secondary"
+                       Foreground="#38BDF8"
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Stretch"
+                       Padding="14,10"
+                       Click="OnSaveWithBackupClick"/>
         </StackPanel>
 
         <!-- CANCEL -->
-        <Button Grid.Row="2" 
-                Content="Batal" 
-                Background="#2A2A38" 
-                BorderBrush="#44445A" 
-                HorizontalAlignment="Right" 
-                Padding="16,6" 
-                Margin="0,14,0,0" 
-                Click="OnCancelClick"/>
+        <ui:Button Grid.Row="2" 
+                   Content="Batal" 
+                   Appearance="Secondary"
+                   HorizontalAlignment="Right" 
+                   Padding="16,6" 
+                   Margin="0,14,0,0" 
+                   Click="OnCancelClick"/>
     </Grid>
 </Window>

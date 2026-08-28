@@ -3,80 +3,65 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:controls="clr-namespace:BedrockInventoryEditor.UI.Controls"
         xmlns:converters="clr-namespace:BedrockInventoryEditor.UI.Converters"
         mc:Ignorable="d"
         Title="Minecraft Bedrock Inventory Editor" 
-        Icon="Assets/app_icon.png"
-        Height="820" Width="1320"
+        Icon="pack://application:,,,/BedrockInventoryEditor;component/Assets/app_icon.png"
+        Height="820" Width="1340"
         MinHeight="720" MinWidth="1120"
         WindowStartupLocation="CenterScreen"
-        Background="#0A0C13" 
+        Background="#0E1117" 
         Foreground="#F1F5F9"
-        FontFamily="Segoe UI"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
         AllowDrop="True"
         Drop="OnWindowDrop"
         DragOver="OnWindowDragOver">
 
     <Window.Resources>
-        <converters:ItemImageConverter x:Key="ItemImage"/>
-        <converters:EmptyToVisibilityConverter x:Key="EmptyToVis"/>
-        <converters:CountToVisibilityConverter x:Key="CountToVis"/>
-        <converters:ItemHasImageToVisibilityConverter x:Key="ItemHasImageToVis"/>
-
-        <!-- ========================================== -->
-        <!-- 1. MODERN BUTTON STYLE                     -->
-        <!-- ========================================== -->
-        <Style TargetType="Button">
-            <Setter Property="Background" Value="#151928"/>
-            <Setter Property="Foreground" Value="#F1F5F9"/>
-            <Setter Property="BorderBrush" Value="#252D44"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Cursor" Value="Hand"/>
+        <!-- Sidebar Navigation TabControl Template -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="BtnBorder" 
-                                Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BtnBorder" Property="BorderBrush" Value="#38BDF8"/>
-                                <Setter TargetName="BtnBorder" Property="Background" Value="#1E243A"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="BtnBorder" Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="BtnBorder" Property="Opacity" Value="0.4"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid Background="#0A0D14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="230"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left Sidebar Navigation Rail -->
+                            <Border Grid.Column="0" Background="#0C0F17" BorderBrush="#1C263C" BorderThickness="0,0,1,0" Padding="12,14">
+                                <StackPanel>
+                                    <TextBlock Text="NAVIGASI EDITOR" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="8,0,0,10"/>
+                                    <StackPanel IsItemsHost="True"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Right Content Workspace Area -->
+                            <Border Grid.Column="1" Background="Transparent">
+                                <ContentPresenter ContentSource="SelectedContent"/>
+                            </Border>
+                        </Grid>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- ========================================== -->
-        <!-- 2. SIDEBAR TABITEM STYLE                   -->
-        <!-- ========================================== -->
+        <!-- Sidebar Navigation TabItem Template -->
         <Style TargetType="TabItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#94A3B8"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Padding" Value="12,10"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
@@ -84,19 +69,28 @@
                                 Background="{TemplateBinding Background}" 
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="1" 
-                                CornerRadius="8" 
+                                CornerRadius="6" 
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Active Indicator Bar on Left -->
+                                <Border x:Name="ActiveIndicator" Grid.Column="0" Width="3" Height="16" Background="#38BDF8" CornerRadius="1.5" Margin="0,0,10,0" Visibility="Collapsed"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#1A2238"/>
-                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#38BDF8"/>
+                                <Setter TargetName="TabBorder" Property="Background" Value="#182236"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#2A3C60"/>
+                                <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
                                 <Setter Property="Foreground" Value="#FFFFFF"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#141A2C"/>
+                                <Setter TargetName="TabBorder" Property="Background" Value="#131B2A"/>
                                 <Setter Property="Foreground" Value="#F1F5F9"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -104,161 +98,20 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <!-- ========================================== -->
-        <!-- 3. MODERN TOGGLE SWITCH STYLE (IOS/DISCORD)-->
-        <!-- ========================================== -->
-        <Style TargetType="{x:Type CheckBox}">
-            <Setter Property="Foreground" Value="#E2E8F0"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontWeight" Value="Normal"/>
+        <!-- ComboBox Item Styling -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type CheckBox}">
-                        <DockPanel LastChildFill="True" Background="Transparent" VerticalAlignment="Center">
-                            <!-- Switch Track on the Right -->
-                            <Border x:Name="SwitchTrack" DockPanel.Dock="Right" Width="34" Height="18" CornerRadius="9" Background="#1A2032" BorderBrush="#2A344E" BorderThickness="1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                <Ellipse x:Name="SwitchThumb" Width="12" Height="12" Fill="#94A3B8" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Center"/>
-                            </Border>
-                            <!-- Label on the Left -->
-                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                        </DockPanel>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="SwitchTrack" Property="Background" Value="#10B981"/>
-                                <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#059669"/>
-                                <Setter TargetName="SwitchThumb" Property="Fill" Value="#FFFFFF"/>
-                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
-                                <Setter TargetName="SwitchThumb" Property="Margin" Value="0,0,2,0"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#38BDF8"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ========================================== -->
-        <!-- 4. MODERN ROUNDED TEXTBOX                  -->
-        <!-- ========================================== -->
-        <Style TargetType="{x:Type TextBox}">
-            <Setter Property="Background" Value="#0F121C"/>
             <Setter Property="Foreground" Value="#F1F5F9"/>
-            <Setter Property="BorderBrush" Value="#222A40"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="CaretBrush" Value="#38BDF8"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Border x:Name="BoxBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BoxBorder" Property="BorderBrush" Value="#38BDF8"/>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="BoxBorder" Property="BorderBrush" Value="#38BDF8"/>
-                                <Setter TargetName="BoxBorder" Property="Background" Value="#141826"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ========================================== -->
-        <!-- 5. MODERN DARK COMBOBOX                    -->
-        <!-- ========================================== -->
-        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
-            <Border x:Name="Border" CornerRadius="6" Background="#0F121C" BorderBrush="#222A40" BorderThickness="1">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="22"/>
-                    </Grid.ColumnDefinitions>
-                    <Path Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0" Stroke="#8E99B4" StrokeThickness="1.8"/>
-                </Grid>
-            </Border>
-            <ControlTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="Border" Property="BorderBrush" Value="#38BDF8"/>
-                    <Setter TargetName="Border" Property="Background" Value="#141826"/>
-                </Trigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
-
-        <Style TargetType="{x:Type ComboBox}">
-            <Setter Property="Foreground" Value="#F1F5F9"/>
-            <Setter Property="Background" Value="#0F121C"/>
-            <Setter Property="BorderBrush" Value="#222A40"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ComboBox}">
-                        <Grid>
-                            <ToggleButton x:Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
-                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="8,3,24,3" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
-                                <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                    <Border x:Name="DropDownBorder" Background="#121624" BorderBrush="#252D44" BorderThickness="1" CornerRadius="6" Margin="0,3,0,0">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#000000" BlurRadius="14" ShadowDepth="4" Opacity="0.75"/>
-                                        </Border.Effect>
-                                        <ScrollViewer Margin="4" SnapsToDevicePixels="True">
-                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
-                                        </ScrollViewer>
-                                    </Border>
-                                </Grid>
-                            </Popup>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ========================================== -->
-        <!-- 6. SLIM MODERN SCROLLBAR                   -->
-        <!-- ========================================== -->
-        <Style TargetType="{x:Type ScrollBar}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#252B3E"/>
-            <Setter Property="Width" Value="8"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ScrollBar}">
-                        <Grid x:Name="Bg" SnapsToDevicePixels="true">
-                            <Track x:Name="PART_Track" IsDirectionReversed="true">
-                                <Track.Thumb>
-                                    <Thumb>
-                                        <Thumb.Template>
-                                            <ControlTemplate TargetType="{x:Type Thumb}">
-                                                <Border CornerRadius="4" Background="#28314A" Margin="1,0"/>
-                                            </ControlTemplate>
-                                        </Thumb.Template>
-                                    </Thumb>
-                                </Track.Thumb>
-                            </Track>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
     </Window.Resources>
 
     <Grid>
         <!-- ========================================== -->
-        <!-- 1. HOME VIEW (MINIMAL STARTUP SCREEN)     -->
+        <!-- 1. HOME VIEW (FLUENT HERO WELCOME SCREEN)  -->
         <!-- ========================================== -->
-        <Grid x:Name="ViewHome" Visibility="Visible" Background="#0A0C13">
+        <Grid x:Name="ViewHome" Visibility="Visible" Background="#0A0D14">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -270,11 +123,11 @@
                     
                     <!-- App Logo & Branding Header -->
                     <StackPanel HorizontalAlignment="Center" Margin="0,0,0,32">
-                        <Border Width="64" Height="64" Background="#121624" BorderBrush="#222A40" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center" Margin="0,0,0,14">
-                            <Image Source="Assets/app_icon.png" Width="44" Height="44" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                        </Border>
+                        <ui:Card Margin="0,0,0,14" Padding="10" HorizontalAlignment="Center">
+                            <Image Source="Assets/app_icon.png" Width="48" Height="48" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                        </ui:Card>
                         <TextBlock Text="Minecraft Bedrock Inventory Editor" FontSize="26" FontWeight="Bold" Foreground="#F1F5F9" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Editor inventaris, perlengkapan armor, ender chest, dan pengaturan dunia Bedrock Edition." FontSize="13" Foreground="#8E99B4" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        <TextBlock Text="Editor inventaris, perlengkapan armor, ender chest, dan pengaturan dunia Bedrock Edition." FontSize="13" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
 
                     <!-- 2-Column Hub Layout: Quick Actions & Recent Worlds -->
@@ -287,67 +140,63 @@
 
                         <!-- LEFT COLUMN: Open Options & Drag Drop Area -->
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="PILIH WORLD" FontSize="11" FontWeight="Bold" Foreground="#8E99B4" Margin="0,0,0,10"/>
+                            <TextBlock Text="PILIH WORLD" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,0,10"/>
 
                             <!-- Button 1: Open World Folder -->
-                            <Button Margin="0,0,0,10" Padding="14,12" HorizontalContentAlignment="Left" Background="#121624" BorderBrush="#20283C" Click="OnOpenFolderClick">
+                            <ui:CardAction Margin="0,0,0,10" Padding="14,12" Click="OnOpenFolderClick">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Width="42" Height="42" Background="#192238" BorderBrush="#2A3858" BorderThickness="1" CornerRadius="8" Margin="0,0,12,0">
-                                        <TextBlock Text="📁" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
+                                    <ui:SymbolIcon Symbol="FolderOpen24" FontSize="26" Foreground="#38BDF8" VerticalAlignment="Center" Margin="0,0,14,0"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Buka Folder World..." FontSize="14" FontWeight="Bold" Foreground="#F1F5F9"/>
-                                        <TextBlock Text="Pilih folder save world Bedrock di drive mana pun (C:, D:, USB, BDS)" FontSize="11" Foreground="#8E99B4" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Pilih folder save world Bedrock di drive mana pun (C:, D:, USB, BDS)" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
-                            </Button>
+                            </ui:CardAction>
 
                             <!-- Button 2: Open .mcworld Package -->
-                            <Button Margin="0,0,0,12" Padding="14,12" HorizontalContentAlignment="Left" Background="#121624" BorderBrush="#20283C" Click="OnOpenMcWorldClick">
+                            <ui:CardAction Margin="0,0,0,12" Padding="14,12" Click="OnOpenMcWorldClick">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Width="42" Height="42" Background="#261E14" BorderBrush="#4A3820" BorderThickness="1" CornerRadius="8" Margin="0,0,12,0">
-                                        <TextBlock Text="📦" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
+                                    <ui:SymbolIcon Symbol="Archive24" FontSize="26" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0,0,14,0"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Buka File .mcworld..." FontSize="14" FontWeight="Bold" Foreground="#F59E0B"/>
-                                        <TextBlock Text="Buka langsung file arsip paket world .mcworld atau .zip" FontSize="11" Foreground="#8E99B4" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Buka langsung file arsip paket world .mcworld atau .zip" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
-                            </Button>
+                            </ui:CardAction>
 
-                            <!-- Drop Zone Banner -->
-                            <Border Background="#0D101A" BorderBrush="#1C2438" BorderThickness="1" CornerRadius="8" Padding="14,16">
+                            <!-- Drop Zone Card -->
+                            <ui:Card Padding="14,16">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="📥" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="24" Foreground="#38BDF8" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Seret &amp; Lepas (Drag &amp; Drop)" FontWeight="Bold" FontSize="12" Foreground="#38BDF8"/>
                                         <TextBlock Text="Tarik folder world atau file .mcworld ke jendela ini untuk langsung membukanya." FontSize="11" Foreground="#64748B" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
-                            </Border>
+                            </ui:Card>
                         </StackPanel>
 
                         <!-- RIGHT COLUMN: Recent Worlds List -->
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="RIWAYAT WORLD TERAKHIR" FontSize="11" FontWeight="Bold" Foreground="#8E99B4" Margin="0,0,0,10"/>
+                            <TextBlock Text="RIWAYAT WORLD TERAKHIR" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,0,10"/>
                             
-                            <Border Background="#121624" CornerRadius="8" BorderBrush="#20283C" BorderThickness="1" Padding="14" MinHeight="236">
+                            <ui:Card Padding="14" MinHeight="236">
                                 <ScrollViewer MaxHeight="270" VerticalScrollBarVisibility="Auto">
                                     <StackPanel x:Name="PnlRecentWorldsList"/>
                                 </ScrollViewer>
-                            </Border>
+                            </ui:Card>
                         </StackPanel>
                     </Grid>
 
@@ -355,7 +204,7 @@
             </ScrollViewer>
 
             <!-- Home Status Bar -->
-            <Border Grid.Row="1" Background="#0A0C13" BorderBrush="#181E2E" BorderThickness="0,1,0,0" Padding="18,8">
+            <Border Grid.Row="1" Background="#080A10" BorderBrush="#1C2438" BorderThickness="0,1,0,0" Padding="18,8">
                 <DockPanel LastChildFill="True">
                     <Border DockPanel.Dock="Right" Background="#112218" BorderBrush="#1C452E" BorderThickness="1" CornerRadius="4" Padding="7,2">
                         <TextBlock Text="v1.0" Foreground="#10B981" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
@@ -369,7 +218,7 @@
         <!-- ========================================================= -->
         <!-- 2. EDITOR VIEW (SIDEBAR NAVIGATION + FULL PAGE WORKSPACE) -->
         <!-- ========================================================= -->
-        <Grid x:Name="ViewEditor" Visibility="Collapsed" Background="#0A0C13">
+        <Grid x:Name="ViewEditor" Visibility="Collapsed" Background="#0A0D14">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Top App Header -->
                 <RowDefinition Height="*"/>    <!-- Main Body Split (Sidebar + Content) -->
@@ -377,17 +226,17 @@
             </Grid.RowDefinitions>
 
             <!-- TOP APP HEADER -->
-            <Border Grid.Row="0" Background="#0F121C" BorderBrush="#1C2234" BorderThickness="0,0,0,1" Padding="16,10">
+            <Border Grid.Row="0" Background="#0F1420" BorderBrush="#1C263C" BorderThickness="0,0,0,1" Padding="16,10">
                 <DockPanel LastChildFill="True">
                     <!-- Left: Logo & World Indicator -->
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
-                        <Border Width="28" Height="28" Background="#182034" BorderBrush="#283654" BorderThickness="1" CornerRadius="6" Margin="0,0,10,0" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" Background="#182238" BorderBrush="#283858" BorderThickness="1" CornerRadius="6" Margin="0,0,10,0" VerticalAlignment="Center">
                             <Image Source="Assets/app_icon.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                         </Border>
                         <TextBlock Text="Bedrock Editor" FontWeight="Bold" FontSize="13" Foreground="#F1F5F9" VerticalAlignment="Center" Margin="0,0,12,0"/>
                         
                         <!-- World Pill -->
-                        <Border Background="#141A2A" CornerRadius="6" BorderBrush="#222E48" BorderThickness="1" Padding="10,4" Margin="0,0,8,0">
+                        <Border Background="#141C2E" CornerRadius="6" BorderBrush="#22304E" BorderThickness="1" Padding="10,4" Margin="0,0,8,0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="🌍 " FontSize="11" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="TxtToolbarWorldName" Text="World Aktif" Foreground="#10B981" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
@@ -397,9 +246,9 @@
 
                     <!-- Right Buttons: Home & Save -->
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button Content="📂 Buka Lain" Margin="0,0,8,0" Padding="12,6" Background="#151928" BorderBrush="#252D44" Click="OnOpenFolderClick"/>
-                        <Button Content="🏠 Beranda" Margin="0,0,12,0" Padding="12,6" Background="#151928" BorderBrush="#252D44" Click="OnBackToHomeClick"/>
-                        <Button Content="💾 Simpan ke LevelDB" Background="#0F5132" BorderBrush="#198754" FontWeight="Bold" Padding="18,7" Foreground="#FFFFFF" Cursor="Hand" Click="OnSaveToWorldClick"/>
+                        <ui:Button Icon="{ui:SymbolIcon FolderOpen24}" Content="Buka Lain" Margin="0,0,8,0" Padding="12,6" Appearance="Secondary" Click="OnOpenFolderClick"/>
+                        <ui:Button Icon="{ui:SymbolIcon Home24}" Content="Beranda" Margin="0,0,12,0" Padding="12,6" Appearance="Secondary" Click="OnBackToHomeClick"/>
+                        <ui:Button Icon="{ui:SymbolIcon Save24}" Content="Simpan ke LevelDB" Appearance="Primary" FontWeight="Bold" Padding="18,7" Click="OnSaveToWorldClick"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
@@ -411,8 +260,8 @@
                     <!-- TAB 1: INVENTARIS & ARMOR -->
                     <TabItem>
                         <TabItem.Header>
-                            <StackPanel Orientation="Horizontal" Width="180">
-                                <TextBlock Text="🎒" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Backpack24" FontSize="18" Foreground="#38BDF8" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Tas &amp; Armor" FontSize="12" VerticalAlignment="Center"/>
                             </StackPanel>
                         </TabItem.Header>
@@ -426,10 +275,10 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Left: Equipment Card -->
-                            <Border Grid.Column="0" Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="14">
+                            <ui:Card Grid.Column="0" Padding="14">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel>
-                                        <Border Background="#0D101A" CornerRadius="6" Padding="12" Margin="0,0,0,14" BorderBrush="#1A2032" BorderThickness="1">
+                                        <Border Background="#0D111A" CornerRadius="6" Padding="12" Margin="0,0,0,14" BorderBrush="#1C2438" BorderThickness="1">
                                             <StackPanel>
                                                 <TextBlock Text="PEMAIN AKTIF" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
                                                 <TextBlock x:Name="TxtActiveWorldName" Text="Belum ada world dimuat" FontSize="14" FontWeight="Bold" Foreground="#F59E0B" Margin="0,3,0,0" TextWrapping="Wrap"/>
@@ -437,7 +286,7 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <TextBlock Text="ARMOR &amp; OFFHAND" FontWeight="Bold" FontSize="11" Foreground="#8E99B4" Margin="0,0,0,10"/>
+                                        <TextBlock Text="ARMOR &amp; OFFHAND" FontWeight="Bold" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,10"/>
 
                                         <!-- Armor Grid -->
                                         <Grid HorizontalAlignment="Center" Margin="0,0,0,14">
@@ -461,32 +310,32 @@
 
                                             <!-- Offhand Slot (Column 2) -->
                                             <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Center">
-                                                <TextBlock Text="Offhand" FontSize="10" FontWeight="SemiBold" Foreground="#8E99B4" HorizontalAlignment="Center" Margin="0,0,0,3"/>
+                                                <TextBlock Text="Offhand" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,0,0,3"/>
                                                 <controls:InventorySlotControl x:Name="SlotOffhand"/>
                                             </StackPanel>
                                         </Grid>
 
                                         <!-- Quick Guide Card -->
-                                        <Border Background="#0D101A" CornerRadius="6" Padding="12" BorderBrush="#1A2032" BorderThickness="1">
+                                        <Border Background="#0D111A" CornerRadius="6" Padding="12" BorderBrush="#1C2438" BorderThickness="1">
                                             <StackPanel>
                                                 <TextBlock Text="💡 Petunjuk Singkat:" FontWeight="Bold" FontSize="11" Foreground="#38BDF8" Margin="0,0,0,4"/>
-                                                <TextBlock Text="• Klik slot mana pun untuk mengedit item, jumlah, durabilitas, nama, dan enchant." FontSize="10" Foreground="#8E99B4" TextWrapping="Wrap" Margin="0,0,0,3"/>
-                                                <TextBlock Text="• Pastikan Minecraft ditutup sebelum menyimpan." FontSize="10" Foreground="#8E99B4" TextWrapping="Wrap"/>
+                                                <TextBlock Text="• Klik slot mana pun untuk mengedit item, jumlah, durabilitas, nama, dan enchant." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,3"/>
+                                                <TextBlock Text="• Pastikan Minecraft ditutup sebelum menyimpan." FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
                                 </ScrollViewer>
-                            </Border>
+                            </ui:Card>
 
                             <!-- Right: Bag & Hotbar Grid Card -->
-                            <Border Grid.Column="2" Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="16">
+                            <ui:Card Grid.Column="2" Padding="16">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel>
                                         <!-- Main Bag Header -->
                                         <TextBlock Text="Tas Utama (Main Inventory • 27 Slot)" FontWeight="Bold" FontSize="13" Foreground="#CBD5E1" Margin="0,0,0,8"/>
 
                                         <!-- Main Bag ItemsControl (3 Rows x 9 Columns) -->
-                                        <Border Background="#0D101A" CornerRadius="6" Padding="8" BorderBrush="#1A2032" BorderThickness="1" HorizontalAlignment="Left" Margin="0,0,0,16">
+                                        <Border Background="#0D111A" CornerRadius="6" Padding="8" BorderBrush="#1C2438" BorderThickness="1" HorizontalAlignment="Left" Margin="0,0,0,16">
                                             <ItemsControl x:Name="ItemsBag">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -505,7 +354,7 @@
                                         <TextBlock Text="Hotbar Cepat (1x9 Slot)" FontWeight="Bold" FontSize="13" Foreground="#F59E0B" Margin="0,0,0,8"/>
 
                                         <!-- Hotbar ItemsControl (1 Row x 9 Columns) -->
-                                        <Border Background="#0D101A" CornerRadius="6" Padding="8" BorderBrush="#1A2032" BorderThickness="1" HorizontalAlignment="Left">
+                                        <Border Background="#0D111A" CornerRadius="6" Padding="8" BorderBrush="#1C2438" BorderThickness="1" HorizontalAlignment="Left">
                                             <ItemsControl x:Name="ItemsHotbar">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -521,26 +370,26 @@
                                         </Border>
                                     </StackPanel>
                                 </ScrollViewer>
-                            </Border>
+                            </ui:Card>
                         </Grid>
                     </TabItem>
 
                     <!-- TAB 2: ENDER CHEST -->
                     <TabItem>
                         <TabItem.Header>
-                            <StackPanel Orientation="Horizontal" Width="180">
-                                <TextBlock Text="👁️" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Eye24" FontSize="18" Foreground="#A855F7" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Ender Chest" FontSize="12" VerticalAlignment="Center"/>
                             </StackPanel>
                         </TabItem.Header>
 
                         <!-- Content 2: Ender Chest Page -->
-                        <Border Margin="16" Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="20">
+                        <ui:Card Margin="16" Padding="20">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
                                     <Border Background="#161324" BorderBrush="#322452" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,16" Width="520">
                                         <DockPanel LastChildFill="True">
-                                            <TextBlock Text="👁️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                            <ui:SymbolIcon Symbol="Eye24" FontSize="24" Foreground="#A855F7" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Text="Inventaris Ender Chest (27 Slot)" FontWeight="Bold" FontSize="14" Foreground="#E9D5FF"/>
                                                 <TextBlock Text="Slot penyimpanan pribadi yang terhubung antar dimensi." FontSize="11" Foreground="#A78BFA" Margin="0,2,0,0"/>
@@ -549,7 +398,7 @@
                                     </Border>
 
                                     <!-- Ender Chest ItemsControl (3x9) -->
-                                    <Border Background="#0D101A" CornerRadius="8" Padding="10" BorderBrush="#1A2032" BorderThickness="1" HorizontalAlignment="Center">
+                                    <Border Background="#0D111A" CornerRadius="8" Padding="10" BorderBrush="#1C2438" BorderThickness="1" HorizontalAlignment="Center">
                                         <ItemsControl x:Name="ItemsEnderChest">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
@@ -565,14 +414,14 @@
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
-                        </Border>
+                        </ui:Card>
                     </TabItem>
 
                     <!-- TAB 3: CONTAINER SEKITAR -->
                     <TabItem>
                         <TabItem.Header>
-                            <StackPanel Orientation="Horizontal" Width="180">
-                                <TextBlock Text="📦" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Box24" FontSize="18" Foreground="#F59E0B" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Peti &amp; Wadah Sekitar" FontSize="12" VerticalAlignment="Center"/>
                             </StackPanel>
                         </TabItem.Header>
@@ -585,7 +434,7 @@
                             </Grid.RowDefinitions>
 
                             <!-- Top Filters Bar -->
-                            <Border Grid.Row="0" Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="12,8" Margin="0,0,0,12">
+                            <ui:Card Grid.Row="0" Padding="12,8" Margin="0,0,0,12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -596,8 +445,8 @@
 
                                     <!-- Radius Filter -->
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
-                                        <TextBlock Text="Jarak:" Foreground="#8E99B4" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <ComboBox x:Name="CmbContainerRadius" Width="135" Height="28" SelectionChanged="OnContainerFilterChanged">
+                                        <TextBlock Text="Jarak:" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="CmbContainerRadius" Width="140" Height="32" VerticalContentAlignment="Center" Padding="8,0" SelectionChanged="OnContainerFilterChanged">
                                             <ComboBoxItem Content="Radius 32 Blok"/>
                                             <ComboBoxItem Content="Radius 64 Blok" IsSelected="True"/>
                                             <ComboBoxItem Content="Radius 128 Blok"/>
@@ -608,8 +457,8 @@
 
                                     <!-- Type Filter -->
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
-                                        <TextBlock Text="Tipe:" Foreground="#8E99B4" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <ComboBox x:Name="CmbContainerType" Width="145" Height="28" SelectionChanged="OnContainerFilterChanged">
+                                        <TextBlock Text="Tipe:" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="CmbContainerType" Width="150" Height="32" VerticalContentAlignment="Center" Padding="8,0" SelectionChanged="OnContainerFilterChanged">
                                             <ComboBoxItem Content="Semua Tipe" IsSelected="True"/>
                                             <ComboBoxItem Content="Peti &amp; Tong"/>
                                             <ComboBoxItem Content="Shulker Box"/>
@@ -620,15 +469,14 @@
                                     </StackPanel>
 
                                     <!-- Search Box -->
-                                    <TextBox x:Name="TxtSearchContainers" Grid.Column="2" Height="28" Margin="0,0,10,0" Padding="8,4" 
-                                             Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF"
-                                             TextChanged="OnContainerSearchTextChanged"
-                                             ToolTip="Cari nama peti, koordinat (X, Z), atau nama item di dalam wadah"/>
+                                    <ui:TextBox x:Name="TxtSearchContainers" Grid.Column="2" Height="28" Margin="0,0,10,0" Padding="8,4" 
+                                                PlaceholderText="Cari nama peti, koordinat, atau item..."
+                                                TextChanged="OnContainerSearchTextChanged"/>
 
                                     <!-- Refresh Button -->
-                                    <Button x:Name="BtnRescanContainers" Grid.Column="3" Content="🔄 Pindai" Padding="14,4" FontWeight="Bold" Background="#151928" BorderBrush="#252D44" Click="OnRescanContainersClick"/>
+                                    <ui:Button x:Name="BtnRescanContainers" Grid.Column="3" Icon="{ui:SymbolIcon ArrowClockwise24}" Content="Pindai" Appearance="Secondary" FontWeight="Bold" Padding="14,4" Click="OnRescanContainersClick"/>
                                 </Grid>
-                            </Border>
+                            </ui:Card>
 
                             <!-- Master-Detail Content -->
                             <Grid Grid.Row="1">
@@ -639,7 +487,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- LEFT: Container Selector List -->
-                                <Border Grid.Column="0" Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="8">
+                                <ui:Card Grid.Column="0" Padding="8">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -659,7 +507,7 @@
                                                  VirtualizingStackPanel.VirtualizationMode="Recycling">
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="#161B2C" CornerRadius="6" Padding="8,6" Margin="0,0,0,4" BorderBrush="#222A40" BorderThickness="1">
+                                                    <Border Background="#141C2E" CornerRadius="6" Padding="8,6" Margin="0,0,0,4" BorderBrush="#22304E" BorderThickness="1">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="Auto"/>
@@ -668,7 +516,7 @@
                                                             </Grid.ColumnDefinitions>
 
                                                             <!-- Icon -->
-                                                            <Border Grid.Column="0" Width="32" Height="32" Background="#0D101A" CornerRadius="4" Margin="0,0,8,0">
+                                                            <Border Grid.Column="0" Width="32" Height="32" Background="#0D111A" CornerRadius="4" Margin="0,0,8,0">
                                                                 <Image Source="{Binding BlockId, Converter={StaticResource ItemImage}}" 
                                                                        Width="24" Height="24" 
                                                                        HorizontalAlignment="Center" VerticalAlignment="Center" 
@@ -695,18 +543,18 @@
                                         </ListBox>
 
                                         <!-- Empty State -->
-                                        <Border x:Name="PnlNoContainers" Grid.Row="1" Background="#11131E" CornerRadius="6" Padding="14" VerticalAlignment="Center" Margin="8" Visibility="Collapsed">
+                                        <Border x:Name="PnlNoContainers" Grid.Row="1" Background="#111520" CornerRadius="6" Padding="14" VerticalAlignment="Center" Margin="8" Visibility="Collapsed">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                                <ui:SymbolIcon Symbol="Search24" FontSize="26" Foreground="#F59E0B" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                                                 <TextBlock Text="Tidak ada container ditemukan." FontWeight="Bold" FontSize="11" Foreground="#F59E0B" TextAlignment="Center" TextWrapping="Wrap"/>
                                                 <TextBlock Text="Coba perbesar radius atau ubah filter pencarian." FontSize="10" Foreground="#64748B" TextAlignment="Center" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
                                     </Grid>
-                                </Border>
+                                </ui:Card>
 
                                 <!-- RIGHT: Selected Container Slot Grid -->
-                                <Border Grid.Column="2" Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="12">
+                                <ui:Card Grid.Column="2" Padding="12">
                                     <Grid x:Name="PnlSelectedContainer">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/> <!-- Header Info -->
@@ -715,15 +563,15 @@
                                         </Grid.RowDefinitions>
 
                                         <!-- Header Info -->
-                                        <Border Grid.Row="0" Background="#161B2C" CornerRadius="6" BorderBrush="#222A40" BorderThickness="1" Padding="10,7" Margin="0,0,0,10">
+                                        <Border Grid.Row="0" Background="#141C2E" CornerRadius="6" BorderBrush="#22304E" BorderThickness="1" Padding="10,7" Margin="0,0,0,10">
                                             <DockPanel LastChildFill="True">
-                                                <Border DockPanel.Dock="Left" Width="32" Height="32" Background="#0D101A" CornerRadius="4" Margin="0,0,10,0">
+                                                <Border DockPanel.Dock="Left" Width="32" Height="32" Background="#0D111A" CornerRadius="4" Margin="0,0,10,0">
                                                     <Image x:Name="ImgSelectedContainer" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <DockPanel>
                                                         <TextBlock x:Name="TxtSelectedContainerName" Text="Pilih container untuk melihat isi" FontWeight="Bold" FontSize="13" Foreground="#F1F5F9"/>
-                                                        <Border x:Name="BadgeContainerDim" Background="#192238" CornerRadius="3" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                        <Border x:Name="BadgeContainerDim" Background="#19243C" CornerRadius="3" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
                                                             <TextBlock x:Name="TxtSelectedContainerDim" Text="Overworld" FontSize="9" FontWeight="Bold" Foreground="#38BDF8"/>
                                                         </Border>
                                                     </DockPanel>
@@ -734,7 +582,7 @@
 
                                         <!-- Slots Grid Area -->
                                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                                            <Border Background="#0D101A" CornerRadius="6" Padding="8" BorderBrush="#1A2032" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                            <Border Background="#0D111A" CornerRadius="6" Padding="8" BorderBrush="#1C2438" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top">
                                                 <ItemsControl x:Name="ItemsContainerSlots">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
@@ -752,20 +600,20 @@
                                         </ScrollViewer>
 
                                         <!-- Footer Tip -->
-                                        <Border Grid.Row="2" Background="#161B2C" CornerRadius="6" BorderBrush="#222A40" BorderThickness="1" Padding="10,6" Margin="0,8,0,0">
+                                        <Border Grid.Row="2" Background="#141C2E" CornerRadius="6" BorderBrush="#22304E" BorderThickness="1" Padding="10,6" Margin="0,8,0,0">
                                             <TextBlock Text="💡 Klik slot mana pun untuk mengedit item, jumlah, durabilitas, atau enchantment di wadah ini." FontSize="10" Foreground="#64748B" VerticalAlignment="Center"/>
                                         </Border>
                                     </Grid>
-                                </Border>
+                                </ui:Card>
                             </Grid>
                         </Grid>
                     </TabItem>
 
-                    <!-- TAB 4: WORLD SETTINGS & GAMERULES (FULL SCROLLABLE BENTO DASHBOARD WITH MANUAL INPUTS) -->
+                    <!-- TAB 4: WORLD SETTINGS & GAMERULES (FULL SCROLLABLE BENTO DASHBOARD WITH WPF-UI SWITCHES & INPUTS) -->
                     <TabItem>
                         <TabItem.Header>
-                            <StackPanel Orientation="Horizontal" Width="180">
-                                <TextBlock Text="⚙️" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Settings24" FontSize="18" Foreground="#10B981" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Pengaturan World" FontSize="12" VerticalAlignment="Center"/>
                             </StackPanel>
                         </TabItem.Header>
@@ -775,55 +623,53 @@
                             <StackPanel Margin="0,0,0,24">
                                 
                                 <!-- 1. HERO WORLD HEADER & ACTION CONTROL HUB -->
-                                <Border Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="16,14" Margin="0,0,0,14">
+                                <ui:Card Padding="16,14" Margin="0,0,0,14">
                                     <StackPanel>
                                         <!-- Top Row: World Name & Action Buttons -->
                                         <DockPanel LastChildFill="True" Margin="0,0,0,12">
                                             <!-- Action Buttons Group -->
                                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-                                                <Button x:Name="BtnReloadWorldSettings" Content="🔄 Muat Ulang" Padding="14,7" Margin="0,0,10,0" FontWeight="SemiBold" FontSize="12" Background="#151928" BorderBrush="#252D44" Foreground="#CBD5E1" Cursor="Hand" Click="OnReloadWorldSettingsClick"/>
-                                                <Button x:Name="BtnSaveWorldSettings" Content="💾 Simpan Pengaturan" Padding="18,7" FontWeight="Bold" FontSize="12" Background="#0F5132" BorderBrush="#198754" Foreground="#FFFFFF" Cursor="Hand" Click="OnSaveWorldSettingsClick"/>
+                                                <ui:Button x:Name="BtnReloadWorldSettings" Icon="{ui:SymbolIcon ArrowClockwise24}" Content="Muat Ulang" Padding="14,6" Margin="0,0,10,0" Appearance="Secondary" Click="OnReloadWorldSettingsClick"/>
+                                                <ui:Button x:Name="BtnSaveWorldSettings" Icon="{ui:SymbolIcon Save24}" Content="Simpan Pengaturan" Padding="18,6" Appearance="Primary" FontWeight="Bold" Click="OnSaveWorldSettingsClick"/>
                                             </StackPanel>
 
                                             <!-- World Name Input -->
                                             <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
                                                 <TextBlock Text="NAMA WORLD MINECRAFT:" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                                <Grid>
-                                                    <TextBox x:Name="TxtWorldName" Height="34" Padding="10,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF" FontWeight="Bold" FontSize="13" VerticalContentAlignment="Center" MaxWidth="460" HorizontalAlignment="Left"/>
-                                                </Grid>
+                                                <ui:TextBox x:Name="TxtWorldName" Height="34" Padding="10,0" FontWeight="Bold" FontSize="13" VerticalContentAlignment="Center" MaxWidth="460" HorizontalAlignment="Left"/>
                                             </StackPanel>
                                         </DockPanel>
 
                                         <!-- Middle Row: World Attributes Badges -->
                                         <WrapPanel Margin="0,0,0,12" VerticalAlignment="Center">
                                             <!-- Seed Card Badge -->
-                                            <Border Background="#161B2C" BorderBrush="#222A40" BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,10,6" VerticalAlignment="Center">
+                                            <Border Background="#141C2E" BorderBrush="#22304E" BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,10,6" VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                     <TextBlock Text="🔑 Seed:" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,6,0" VerticalAlignment="Center"/>
                                                     <TextBlock x:Name="TxtWorldSeedDisplay" Text="-" FontSize="12" FontWeight="Bold" Foreground="#F1F5F9" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                    <Button x:Name="BtnCopySeed" Content="📋 Salin" Padding="7,2" FontSize="10" FontWeight="Bold" Background="#1A2032" BorderBrush="#2A3450" Foreground="#CBD5E1" Click="OnCopySeedClick" ToolTip="Salin Seed ke Clipboard" Cursor="Hand"/>
+                                                    <ui:Button x:Name="BtnCopySeed" Icon="{ui:SymbolIcon Copy24}" Content="Salin" Padding="7,2" FontSize="10" FontWeight="Bold" Appearance="Secondary" Click="OnCopySeedClick" ToolTip="Salin Seed ke Clipboard"/>
                                                 </StackPanel>
                                             </Border>
 
                                             <!-- Game Mode Selector -->
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,6">
-                                                <TextBlock Text="Mode:" FontSize="11" FontWeight="SemiBold" Foreground="#8E99B4" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <ComboBox x:Name="CmbGameMode" Height="28" Width="130" FontSize="11" FontWeight="SemiBold">
-                                                    <ComboBoxItem Content="⚔️ Survival" IsSelected="True"/>
-                                                    <ComboBoxItem Content="🧱 Creative"/>
-                                                    <ComboBoxItem Content="🗺️ Adventure"/>
-                                                    <ComboBoxItem Content="👁️ Spectator"/>
+                                                <TextBlock Text="Mode:" FontSize="11" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <ComboBox x:Name="CmbGameMode" Height="34" Width="140" FontSize="12" FontWeight="SemiBold" VerticalContentAlignment="Center" Padding="10,0">
+                                                    <ComboBoxItem Content="Survival" IsSelected="True"/>
+                                                    <ComboBoxItem Content="Creative"/>
+                                                    <ComboBoxItem Content="Adventure"/>
+                                                    <ComboBoxItem Content="Spectator"/>
                                                 </ComboBox>
                                             </StackPanel>
 
                                             <!-- Difficulty Selector -->
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,6">
-                                                <TextBlock Text="Kesulitan:" FontSize="11" FontWeight="SemiBold" Foreground="#8E99B4" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <ComboBox x:Name="CmbDifficulty" Height="28" Width="130" FontSize="11" FontWeight="SemiBold">
-                                                    <ComboBoxItem Content="☮️ Peaceful"/>
-                                                    <ComboBoxItem Content="🟢 Easy"/>
-                                                    <ComboBoxItem Content="🟡 Normal" IsSelected="True"/>
-                                                    <ComboBoxItem Content="🔴 Hard"/>
+                                                <TextBlock Text="Kesulitan:" FontSize="11" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <ComboBox x:Name="CmbDifficulty" Height="34" Width="140" FontSize="12" FontWeight="SemiBold" VerticalContentAlignment="Center" Padding="10,0">
+                                                    <ComboBoxItem Content="Peaceful"/>
+                                                    <ComboBoxItem Content="Easy"/>
+                                                    <ComboBoxItem Content="Normal" IsSelected="True"/>
+                                                    <ComboBoxItem Content="Hard"/>
                                                 </ComboBox>
                                             </StackPanel>
 
@@ -836,12 +682,7 @@
                                         <!-- Bottom Row: Xbox Achievement Status Banner -->
                                         <Border x:Name="PnlAchievementStatus" Background="#161324" BorderBrush="#322452" BorderThickness="1" CornerRadius="8" Padding="14,9">
                                             <DockPanel LastChildFill="True">
-                                                <Button x:Name="BtnRestoreAchievements" DockPanel.Dock="Right" Padding="14,6" FontWeight="Bold" FontSize="11" Background="#2E1B46" BorderBrush="#5B328C" Foreground="#E9D5FF" Cursor="Hand" Click="OnRestoreAchievementsClick" ToolTip="Menyetel hasBeenLoadedInCreative = 0 dan mematikan cheat sehingga world bisa mendapatkan achievement Xbox kembali.">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="🛡️" Margin="0,0,5,0"/>
-                                                        <TextBlock Text="Pulihkan Status Achievement"/>
-                                                    </StackPanel>
-                                                </Button>
+                                                <ui:Button x:Name="BtnRestoreAchievements" DockPanel.Dock="Right" Icon="{ui:SymbolIcon Shield24}" Content="Pulihkan Status Achievement" Padding="14,6" FontWeight="Bold" FontSize="11" Appearance="Secondary" Click="OnRestoreAchievementsClick" ToolTip="Menyetel hasBeenLoadedInCreative = 0 dan mematikan cheat sehingga world bisa mendapatkan achievement Xbox kembali."/>
                                                 <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
                                                     <TextBlock x:Name="TxtAchievementStatus" Text="🔒 Achievement Terkunci (Pernah Mode Creative / Cheat Aktif)" Foreground="#F59E0B" FontWeight="Bold" FontSize="12"/>
                                                     <TextBlock Text="World yang pernah membuka Creative/Cheat dikunci oleh game. Klik tombol di kanan agar dapat meraih trophy Xbox kembali." FontSize="10" Foreground="#A78BFA" Margin="0,2,0,0"/>
@@ -849,7 +690,7 @@
                                             </DockPanel>
                                         </Border>
                                     </StackPanel>
-                                </Border>
+                                </ui:Card>
 
                                 <!-- 2. MAIN 2-COLUMN DASHBOARD BENTO GRID -->
                                 <Grid>
@@ -865,16 +706,16 @@
                                     <StackPanel Grid.Column="0">
                                         
                                         <!-- CARD 1: ⏰ WAKTU & CUACA DUNIA (MANUAL INPUT) -->
-                                        <Border Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="16,14" Margin="0,0,0,14">
+                                        <ui:Card Padding="16,14" Margin="0,0,0,14">
                                             <StackPanel>
                                                 <!-- Header with Day Stepper -->
                                                 <DockPanel Margin="0,0,0,12">
-                                                    <Border DockPanel.Dock="Right" Background="#161B2C" BorderBrush="#222A40" BorderThickness="1" CornerRadius="6" Padding="6,2">
+                                                    <Border DockPanel.Dock="Right" Background="#141C2E" BorderBrush="#22304E" BorderThickness="1" CornerRadius="6" Padding="6,2">
                                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                            <TextBlock Text="📅 Hari ke-" FontSize="11" FontWeight="SemiBold" Foreground="#8E99B4" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                                            <Button Content="◀" Width="18" Height="18" Padding="0" FontWeight="Bold" FontSize="8" Background="#1A2032" BorderBrush="#2A3450" Foreground="#CBD5E1" Click="OnDayDecrementClick" Cursor="Hand"/>
-                                                            <TextBox x:Name="TxtDayCount" Width="40" Height="20" Padding="2,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#38BDF8" TextAlignment="Center" Text="1" FontWeight="Bold" FontSize="11" Margin="3,0" VerticalContentAlignment="Center"/>
-                                                            <Button Content="▶" Width="18" Height="18" Padding="0" FontWeight="Bold" FontSize="8" Background="#1A2032" BorderBrush="#2A3450" Foreground="#CBD5E1" Click="OnDayIncrementClick" Cursor="Hand"/>
+                                                            <TextBlock Text="📅 Hari ke-" FontSize="11" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                            <ui:Button Content="◀" Width="18" Height="18" Padding="0" FontWeight="Bold" FontSize="8" Appearance="Secondary" Click="OnDayDecrementClick"/>
+                                                            <ui:TextBox x:Name="TxtDayCount" Width="40" Height="20" Padding="2,0" Foreground="#38BDF8" TextAlignment="Center" Text="1" FontWeight="Bold" FontSize="11" Margin="3,0" VerticalContentAlignment="Center"/>
+                                                            <ui:Button Content="▶" Width="18" Height="18" Padding="0" FontWeight="Bold" FontSize="8" Appearance="Secondary" Click="OnDayIncrementClick"/>
                                                         </StackPanel>
                                                     </Border>
                                                     <StackPanel VerticalAlignment="Center">
@@ -884,7 +725,7 @@
                                                 </DockPanel>
 
                                                 <!-- Digital Clock Box -->
-                                                <Border Background="#0F121C" CornerRadius="6" Padding="12,7" Margin="0,0,0,10" BorderBrush="#1C2438" BorderThickness="1">
+                                                <Border Background="#0D111A" CornerRadius="6" Padding="12,7" Margin="0,0,0,10" BorderBrush="#1C2438" BorderThickness="1">
                                                     <DockPanel LastChildFill="True">
                                                         <TextBlock Text="STATUS WAKTU:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center"/>
                                                         <TextBlock x:Name="TxtTimeOfDayLabel" Text="🕐 12:00 (6000 ticks) • Siang Hari" FontWeight="Bold" FontSize="11" Foreground="#F59E0B" HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -899,22 +740,22 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="Waktu (Ticks 0-24000):" FontSize="11" FontWeight="SemiBold" Foreground="#8E99B4" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                    <TextBox x:Name="TxtTimeOfDay" Grid.Column="1" Height="28" Padding="8,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#38BDF8" FontWeight="Bold" FontSize="12" Text="6000" VerticalContentAlignment="Center" Margin="0,0,8,0" TextChanged="OnTimeOfDayTextChanged"/>
-                                                    <Button Grid.Column="2" Content="◀ -1000" Padding="8,3" FontSize="10" FontWeight="Bold" Background="#161B2C" BorderBrush="#222A40" Foreground="#CBD5E1" Click="OnTimeDecrementClick" Margin="0,0,4,0" Cursor="Hand"/>
-                                                    <Button Grid.Column="3" Content="+1000 ▶" Padding="8,3" FontSize="10" FontWeight="Bold" Background="#161B2C" BorderBrush="#222A40" Foreground="#CBD5E1" Click="OnTimeIncrementClick" Cursor="Hand"/>
+                                                    <TextBlock Grid.Column="0" Text="Waktu (Ticks):" FontSize="11" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <ui:TextBox x:Name="TxtTimeOfDay" Grid.Column="1" Height="28" Padding="8,0" Foreground="#38BDF8" FontWeight="Bold" FontSize="12" Text="6000" VerticalContentAlignment="Center" Margin="0,0,8,0" TextChanged="OnTimeOfDayTextChanged"/>
+                                                    <ui:Button Grid.Column="2" Content="◀ -1000" Padding="8,3" FontSize="10" FontWeight="Bold" Appearance="Secondary" Click="OnTimeDecrementClick" Margin="0,0,4,0"/>
+                                                    <ui:Button Grid.Column="3" Content="+1000 ▶" Padding="8,3" FontSize="10" FontWeight="Bold" Appearance="Secondary" Click="OnTimeIncrementClick"/>
                                                 </Grid>
 
                                                 <!-- 4 Quick Preset Time Pills -->
                                                 <UniformGrid Rows="1" Columns="4" Margin="0,0,0,12">
-                                                    <Button Content="🌅 Pagi (1k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Background="#161B2C" BorderBrush="#222A40" Foreground="#FB923C" Click="OnPresetMorningClick" Cursor="Hand"/>
-                                                    <Button Content="☀️ Siang (6k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Background="#161B2C" BorderBrush="#222A40" Foreground="#FACC15" Click="OnPresetNoonClick" Cursor="Hand"/>
-                                                    <Button Content="🌇 Sore (12k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Background="#161B2C" BorderBrush="#222A40" Foreground="#F87171" Click="OnPresetSunsetClick" Cursor="Hand"/>
-                                                    <Button Content="🌙 Malam (18k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Background="#161B2C" BorderBrush="#222A40" Foreground="#A78BFA" Click="OnPresetMidnightClick" Cursor="Hand"/>
+                                                    <ui:Button Content="🌅 Pagi (1k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Appearance="Secondary" Foreground="#FB923C" Click="OnPresetMorningClick"/>
+                                                    <ui:Button Content="☀️ Siang (6k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Appearance="Secondary" Foreground="#FACC15" Click="OnPresetNoonClick"/>
+                                                    <ui:Button Content="🌇 Sore (12k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Appearance="Secondary" Foreground="#F87171" Click="OnPresetSunsetClick"/>
+                                                    <ui:Button Content="🌙 Malam (18k)" Padding="4,5" FontSize="10" FontWeight="Bold" Margin="2" Appearance="Secondary" Foreground="#A78BFA" Click="OnPresetMidnightClick"/>
                                                 </UniformGrid>
 
                                                 <!-- Daylight Cycle Switch Row -->
-                                                <Border Background="#161B2C" CornerRadius="6" Padding="10,6" BorderBrush="#222A40" BorderThickness="1" Margin="0,0,0,10">
+                                                <Border Background="#141C2E" CornerRadius="6" Padding="10,6" BorderBrush="#22304E" BorderThickness="1" Margin="0,0,0,10">
                                                     <CheckBox x:Name="ChkDaylightCycle" Content="Pergerakan Matahari Berjalan (dodaylightcycle)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                 </Border>
 
@@ -927,21 +768,21 @@
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Grid.Column="0">
                                                         <TextBlock Text="Kondisi Cuaca:" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                                                        <ComboBox x:Name="CmbWeather" Height="28" FontSize="11" FontWeight="SemiBold">
-                                                            <ComboBoxItem Content="☀️ Cerah (Clear)" IsSelected="True"/>
-                                                            <ComboBoxItem Content="🌧️ Hujan (Rain)"/>
-                                                            <ComboBoxItem Content="⛈️ Badai (Thunder)"/>
+                                                        <ComboBox x:Name="CmbWeather" Height="34" FontSize="12" FontWeight="SemiBold" VerticalContentAlignment="Center" Padding="10,0">
+                                                            <ComboBoxItem Content="Cerah (Clear)" IsSelected="True"/>
+                                                            <ComboBoxItem Content="Hujan (Rain)"/>
+                                                            <ComboBoxItem Content="Badai (Thunder)"/>
                                                         </ComboBox>
                                                     </StackPanel>
-                                                    <Border Grid.Column="2" Background="#161B2C" CornerRadius="6" Padding="10,6" BorderBrush="#222A40" BorderThickness="1" VerticalAlignment="Bottom" Height="28">
+                                                    <Border Grid.Column="2" Background="#141C2E" CornerRadius="6" Padding="10,6" BorderBrush="#22304E" BorderThickness="1" VerticalAlignment="Bottom" Height="28">
                                                         <CheckBox x:Name="ChkWeatherCycle" Content="Cuaca Alami" Foreground="#CBD5E1" FontSize="11" IsChecked="True" VerticalAlignment="Center"/>
                                                     </Border>
                                                 </Grid>
                                             </StackPanel>
-                                        </Border>
+                                        </ui:Card>
 
                                         <!-- CARD 2: ❤️ STATUS & ATRIBUT PEMAIN (MANUAL INPUT) -->
-                                        <Border Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="16,14" Margin="0,0,0,14">
+                                        <ui:Card Padding="16,14" Margin="0,0,0,14">
                                             <StackPanel>
                                                 <TextBlock Text="❤️ Status &amp; Atribut Pemain (~local_player)" FontWeight="Bold" FontSize="13" Foreground="#F43F5E" Margin="0,0,0,12"/>
 
@@ -954,12 +795,12 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <Button Grid.Column="0" Content="◀" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Background="#161B2C" BorderBrush="#222A40" Foreground="#CBD5E1" Click="OnHealthDecrementClick" Cursor="Hand" Margin="0,0,4,0"/>
-                                                    <TextBox x:Name="TxtHealth" Grid.Column="1" Height="28" Padding="4,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#F43F5E" FontWeight="Bold" FontSize="12" Text="20" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,4,0"/>
-                                                    <Button Grid.Column="2" Content="▶" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Background="#161B2C" BorderBrush="#222A40" Foreground="#CBD5E1" Click="OnHealthIncrementClick" Cursor="Hand" Margin="0,0,8,0"/>
+                                                    <ui:Button Grid.Column="0" Content="◀" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Appearance="Secondary" Click="OnHealthDecrementClick" Margin="0,0,4,0"/>
+                                                    <ui:TextBox x:Name="TxtHealth" Grid.Column="1" Height="28" Padding="4,0" Foreground="#F43F5E" FontWeight="Bold" FontSize="12" Text="20" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,4,0"/>
+                                                    <ui:Button Grid.Column="2" Content="▶" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Appearance="Secondary" Click="OnHealthIncrementClick" Margin="0,0,8,0"/>
                                                     <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                        <Button Content="❤️ 20 HP" Padding="8,4" FontSize="10" FontWeight="Bold" Margin="0,0,4,0" Background="#241418" BorderBrush="#4A202A" Foreground="#FDA4AF" Click="OnHealthFullClick" Cursor="Hand"/>
-                                                        <Button Content="🛡️ 40 HP" Padding="8,4" FontSize="10" FontWeight="Bold" Background="#241B12" BorderBrush="#4A341E" Foreground="#FDE047" Click="OnHealthDoubleClick" Cursor="Hand"/>
+                                                        <ui:Button Content="❤️ 20 HP" Padding="8,4" FontSize="10" FontWeight="Bold" Margin="0,0,4,0" Appearance="Secondary" Foreground="#FDA4AF" Click="OnHealthFullClick"/>
+                                                        <ui:Button Content="🛡️ 40 HP" Padding="8,4" FontSize="10" FontWeight="Bold" Appearance="Secondary" Foreground="#FDE047" Click="OnHealthDoubleClick"/>
                                                     </StackPanel>
                                                 </Grid>
 
@@ -982,9 +823,9 @@
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <Button Grid.Column="0" Content="◀" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Background="#161B2C" BorderBrush="#222A40" Foreground="#CBD5E1" Click="OnHungerDecrementClick" Cursor="Hand" Margin="0,0,4,0"/>
-                                                            <TextBox x:Name="TxtHunger" Grid.Column="1" Height="28" Padding="4,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#F59E0B" FontWeight="Bold" FontSize="12" Text="20" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,4,0"/>
-                                                            <Button Grid.Column="2" Content="▶" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Background="#161B2C" BorderBrush="#222A40" Foreground="#CBD5E1" Click="OnHungerIncrementClick" Cursor="Hand"/>
+                                                            <ui:Button Grid.Column="0" Content="◀" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Appearance="Secondary" Click="OnHungerDecrementClick" Margin="0,0,4,0"/>
+                                                            <ui:TextBox x:Name="TxtHunger" Grid.Column="1" Height="28" Padding="4,0" Foreground="#F59E0B" FontWeight="Bold" FontSize="12" Text="20" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,4,0"/>
+                                                            <ui:Button Grid.Column="2" Content="▶" Width="24" Height="28" Padding="0" FontWeight="Bold" FontSize="9" Appearance="Secondary" Click="OnHungerIncrementClick"/>
                                                         </Grid>
                                                     </StackPanel>
 
@@ -996,8 +837,8 @@
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <TextBox x:Name="TxtSaturation" Grid.Column="0" Height="28" Padding="6,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF" Text="20" FontWeight="Bold" FontSize="12" VerticalContentAlignment="Center" Margin="0,0,6,0"/>
-                                                            <Button Grid.Column="1" Content="🍗 Full" Height="28" Padding="8,0" FontSize="10" FontWeight="Bold" Background="#241A12" BorderBrush="#4A341E" Foreground="#FDBA74" Click="OnHungerFullClick" Cursor="Hand"/>
+                                                            <ui:TextBox x:Name="TxtSaturation" Grid.Column="0" Height="28" Padding="6,0" Text="20" FontWeight="Bold" FontSize="12" VerticalContentAlignment="Center" Margin="0,0,6,0"/>
+                                                            <ui:Button Grid.Column="1" Content="🍗 Full" Height="28" Padding="8,0" FontSize="10" FontWeight="Bold" Appearance="Secondary" Foreground="#FDBA74" Click="OnHungerFullClick"/>
                                                         </Grid>
                                                     </StackPanel>
                                                 </Grid>
@@ -1015,35 +856,35 @@
                                                     <!-- XP Level -->
                                                     <StackPanel Grid.Column="0">
                                                         <TextBlock Text="Level XP:" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                                                        <TextBox x:Name="TxtXpLevel" Height="28" Padding="6,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#10B981" FontWeight="Bold" FontSize="12" Text="30" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,0,4"/>
+                                                        <ui:TextBox x:Name="TxtXpLevel" Height="28" Padding="6,0" Foreground="#10B981" FontWeight="Bold" FontSize="12" Text="30" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,0,4"/>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <Button Content="30" Padding="6,2" FontSize="9" FontWeight="Bold" Margin="0,0,3,0" Background="#112218" BorderBrush="#1C452E" Foreground="#86EFAC" Click="OnXpLevel30Click" Cursor="Hand"/>
-                                                            <Button Content="100" Padding="6,2" FontSize="9" FontWeight="Bold" Margin="0,0,3,0" Background="#112218" BorderBrush="#1C452E" Foreground="#86EFAC" Click="OnXpLevel100Click" Cursor="Hand"/>
-                                                            <Button Content="1000" Padding="6,2" FontSize="9" FontWeight="Bold" Background="#112218" BorderBrush="#1C452E" Foreground="#86EFAC" Click="OnXpLevel1000Click" Cursor="Hand"/>
+                                                            <ui:Button Content="30" Padding="6,2" FontSize="9" FontWeight="Bold" Margin="0,0,3,0" Appearance="Secondary" Foreground="#86EFAC" Click="OnXpLevel30Click"/>
+                                                            <ui:Button Content="100" Padding="6,2" FontSize="9" FontWeight="Bold" Margin="0,0,3,0" Appearance="Secondary" Foreground="#86EFAC" Click="OnXpLevel100Click"/>
+                                                            <ui:Button Content="1000" Padding="6,2" FontSize="9" FontWeight="Bold" Appearance="Secondary" Foreground="#86EFAC" Click="OnXpLevel1000Click"/>
                                                         </StackPanel>
                                                     </StackPanel>
 
                                                     <!-- XP Progress % -->
                                                     <StackPanel Grid.Column="2">
                                                         <TextBlock Text="Progress XP (%):" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                                                        <TextBox x:Name="TxtXpProgress" Height="28" Padding="6,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#38BDF8" FontWeight="Bold" FontSize="12" Text="0" TextAlignment="Center" VerticalContentAlignment="Center"/>
+                                                        <ui:TextBox x:Name="TxtXpProgress" Height="28" Padding="6,0" Foreground="#38BDF8" FontWeight="Bold" FontSize="12" Text="0" TextAlignment="Center" VerticalContentAlignment="Center"/>
                                                         <TextBlock Text="Nilai dari 0 sampai 100%" FontSize="9" Foreground="#64748B" Margin="0,4,0,0"/>
                                                     </StackPanel>
                                                 </Grid>
                                             </StackPanel>
-                                        </Border>
+                                        </ui:Card>
 
                                         <!-- CARD 3: 📍 TELEPORTASI TITIK KOORDINAT & DIMENSI -->
-                                        <Border Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="16,14">
+                                        <ui:Card Padding="16,14">
                                             <StackPanel>
                                                 <TextBlock Text="📍 Teleportasi Titik Koordinat &amp; Dimensi" FontWeight="Bold" FontSize="13" Foreground="#38BDF8" Margin="0,0,0,10"/>
                                                 
                                                 <!-- Dimension Selector -->
                                                 <TextBlock Text="PILIH DIMENSI:" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                                                <ComboBox x:Name="CmbPlayerDim" Height="28" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,10">
-                                                    <ComboBoxItem Content="🌲 Overworld (Dunia Atas)" IsSelected="True"/>
-                                                    <ComboBoxItem Content="🔥 Nether (Neraka)"/>
-                                                    <ComboBoxItem Content="🌌 The End (Dunia Akhir)"/>
+                                                <ComboBox x:Name="CmbPlayerDim" Height="34" FontSize="12" FontWeight="SemiBold" VerticalContentAlignment="Center" Padding="10,0" Margin="0,0,0,10">
+                                                    <ComboBoxItem Content="Overworld (Dunia Atas)" IsSelected="True"/>
+                                                    <ComboBoxItem Content="Nether (Neraka)"/>
+                                                    <ComboBoxItem Content="The End (Dunia Akhir)"/>
                                                 </ComboBox>
 
                                                 <!-- Coordinates 3-Col -->
@@ -1057,20 +898,20 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Grid.Column="0">
-                                                        <TextBlock Text="X (Barat/Timur)" FontSize="10" Foreground="#8E99B4" Margin="0,0,0,2"/>
-                                                        <TextBox x:Name="TxtPlayerPosX" Height="26" Padding="4,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
+                                                        <TextBlock Text="X (Barat/Timur)" FontSize="10" Foreground="#94A3B8" Margin="0,0,0,2"/>
+                                                        <ui:TextBox x:Name="TxtPlayerPosX" Height="26" Padding="4,0" Foreground="#FFFFFF" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="2">
-                                                        <TextBlock Text="Y (Tinggi)" FontSize="10" Foreground="#8E99B4" Margin="0,0,0,2"/>
-                                                        <TextBox x:Name="TxtPlayerPosY" Height="26" Padding="4,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
+                                                        <TextBlock Text="Y (Tinggi)" FontSize="10" Foreground="#94A3B8" Margin="0,0,0,2"/>
+                                                        <ui:TextBox x:Name="TxtPlayerPosY" Height="26" Padding="4,0" Foreground="#FFFFFF" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="4">
-                                                        <TextBlock Text="Z (Utara/Selatan)" FontSize="10" Foreground="#8E99B4" Margin="0,0,0,2"/>
-                                                        <TextBox x:Name="TxtPlayerPosZ" Height="26" Padding="4,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
+                                                        <TextBlock Text="Z (Utara/Selatan)" FontSize="10" Foreground="#94A3B8" Margin="0,0,0,2"/>
+                                                        <ui:TextBox x:Name="TxtPlayerPosZ" Height="26" Padding="4,0" Foreground="#FFFFFF" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
                                                     </StackPanel>
                                                 </Grid>
                                             </StackPanel>
-                                        </Border>
+                                        </ui:Card>
                                     </StackPanel>
 
                                     <!-- ======================================== -->
@@ -1079,7 +920,7 @@
                                     <StackPanel Grid.Column="2">
                                         
                                         <!-- CARD 4: ⚙️ ATURAN GAME (GAMERULES) -->
-                                        <Border Background="#121624" CornerRadius="8" BorderBrush="#1E263C" BorderThickness="1" Padding="16,14">
+                                        <ui:Card Padding="16,14">
                                             <StackPanel>
                                                 <TextBlock Text="⚙️ Aturan Game (GameRules)" FontWeight="Bold" FontSize="13" Foreground="#10B981" Margin="0,0,0,2"/>
                                                 <TextBlock Text="Aktifkan atau sesuaikan proteksi dan mekanik dunia" FontSize="10" Foreground="#64748B" Margin="0,0,0,12"/>
@@ -1124,46 +965,46 @@
                                                 </Border>
 
                                                 <!-- Sub-Group 2: Proteksi Kerusakan -->
-                                                <Border Background="#161B2C" CornerRadius="6" Padding="12,10" BorderBrush="#222A40" BorderThickness="1" Margin="0,0,0,10">
+                                                <Border Background="#141C2E" CornerRadius="6" Padding="12,10" BorderBrush="#22304E" BorderThickness="1" Margin="0,0,0,10">
                                                     <StackPanel>
                                                         <TextBlock Text="🛡️ Proteksi Kerusakan (Damage Immunity):" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,6"/>
                                                         
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkFallDamage" Content="Fall Damage (Jatuh dari ketinggian)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkFireDamage" Content="Fire / Lava Damage (Terbakar)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkDrowningDamage" Content="Drowning (Tenggelam dalam air)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4">
                                                             <CheckBox x:Name="ChkFreezeDamage" Content="Freeze (Membeku di salju bubuk)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
                                                     </StackPanel>
                                                 </Border>
 
                                                 <!-- Sub-Group 3: Lingkungan, Monster & HUD -->
-                                                <Border Background="#161B2C" CornerRadius="6" Padding="12,10" BorderBrush="#222A40" BorderThickness="1" Margin="0,0,0,10">
+                                                <Border Background="#141C2E" CornerRadius="6" Padding="12,10" BorderBrush="#22304E" BorderThickness="1" Margin="0,0,0,10">
                                                     <StackPanel>
                                                         <TextBlock Text="🌍 Lingkungan &amp; Tampilan Layar:" FontSize="10" FontWeight="Bold" Foreground="#86EFAC" Margin="0,0,0,6"/>
                                                         
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkMobSpawning" Content="🧟 Spawn Monster &amp; Hewan Alami" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkNaturalRegen" Content="💖 Natural Regen (Darah isi otomatis)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkPvp" Content="⚔️ PVP (Damage Antar Pemain)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkShowCoordinates" Content="📍 Tampilkan Koordinat di Layar" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkShowDaysPlayed" Content="📅 Tampilkan Hari Dimainkan di Layar" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#121624" CornerRadius="5" Padding="8,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4">
                                                             <CheckBox x:Name="ChkTntExplodes" Content="💣 TNT Meledak (TNT Explodes)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
                                                     </StackPanel>
@@ -1178,11 +1019,11 @@
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Grid.Column="0">
                                                         <TextBlock Text="Random Tick (Tanaman):" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                                                        <TextBox x:Name="TxtRandomTickSpeed" Height="26" Padding="6,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF" Text="1" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
+                                                        <ui:TextBox x:Name="TxtRandomTickSpeed" Height="26" Padding="6,0" Foreground="#FFFFFF" Text="1" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="2">
                                                         <TextBlock Text="Sleeping % (Lewati Malam):" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
-                                                        <TextBox x:Name="TxtSleepingPercent" Height="26" Padding="6,0" Background="#0F121C" BorderBrush="#222A40" Foreground="#FFFFFF" Text="100" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
+                                                        <ui:TextBox x:Name="TxtSleepingPercent" Height="26" Padding="6,0" Foreground="#FFFFFF" Text="100" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
                                                     </StackPanel>
                                                 </Grid>
 
@@ -1195,15 +1036,15 @@
                                                         <ColumnDefinition Width="8"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <Border Grid.Column="0" Background="#161B2C" CornerRadius="5" Padding="8,4">
+                                                    <Border Grid.Column="0" Background="#141C2E" CornerRadius="5" Padding="8,4">
                                                         <CheckBox x:Name="ChkCheatsEnabled" Content="👑 Cheats Enabled" Foreground="#CBD5E1" FontSize="10" FontWeight="SemiBold"/>
                                                     </Border>
-                                                    <Border Grid.Column="2" Background="#161B2C" CornerRadius="5" Padding="8,4">
+                                                    <Border Grid.Column="2" Background="#141C2E" CornerRadius="5" Padding="8,4">
                                                         <CheckBox x:Name="ChkCommandsEnabled" Content="⌨️ Commands Enabled" Foreground="#CBD5E1" FontSize="10" FontWeight="SemiBold"/>
                                                     </Border>
                                                 </Grid>
                                             </StackPanel>
-                                        </Border>
+                                        </ui:Card>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
@@ -1214,7 +1055,7 @@
             </Grid>
 
             <!-- STATUS BAR -->
-            <Border Grid.Row="2" Background="#0A0C13" BorderBrush="#181E2E" BorderThickness="0,1,0,0" Padding="16,6">
+            <Border Grid.Row="2" Background="#080A10" BorderBrush="#1C263C" BorderThickness="0,1,0,0" Padding="16,6">
                 <DockPanel LastChildFill="True">
                     <!-- Right: Version Badge & Loaded Path -->
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
@@ -1225,7 +1066,7 @@
                     </StackPanel>
 
                     <!-- Left: Status Message -->
-                    <TextBlock x:Name="TxtStatus" Text="Siap mengedit inventaris." Foreground="#8E99B4" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtStatus" Text="Siap mengedit inventaris." Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 </DockPanel>
             </Border>
         </Grid>

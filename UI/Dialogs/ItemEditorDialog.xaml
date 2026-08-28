@@ -3,54 +3,34 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:converters="clr-namespace:BedrockInventoryEditor.UI.Converters"
         mc:Ignorable="d"
         Title="Edit Item Slot - Minecraft Bedrock" 
-        Icon="/Assets/app_icon.png"
-        Height="520" Width="780"
-        MinHeight="480" MinWidth="700"
+        Icon="pack://application:,,,/BedrockInventoryEditor;component/Assets/app_icon.png"
+        Height="580" Width="768"
         WindowStartupLocation="CenterOwner"
-        Background="#121216" 
-        Foreground="#FFFFFF"
-        FontFamily="Segoe UI"
-        ResizeMode="CanResizeWithGrip">
+        Background="#0E1117" 
+        Foreground="#F1F5F9"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        ResizeMode="NoResize">
 
     <Window.Resources>
-        <converters:ItemImageConverter x:Key="ItemImage"/>
-        <converters:ItemHasImageToVisibilityConverter x:Key="HasImageToVis"/>
-        <converters:ItemIconConverter x:Key="ItemIcon"/>
-        <converters:CountToVisibilityConverter x:Key="CountToVis"/>
-        <converters:EmptyToVisibilityConverter x:Key="EmptyToVis"/>
-        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-
-        <!-- Modern Button Style -->
-        <Style TargetType="Button">
-            <Setter Property="Background" Value="#252534"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#44445A"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
+        <!-- Clean ListBoxItem style to eliminate excessive padding and margins -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,0,0,3"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="4"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <ContentPresenter HorizontalAlignment="Stretch"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#38384E"/>
-                    <Setter Property="BorderBrush" Value="#55FF55"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
     </Window.Resources>
 
@@ -62,7 +42,7 @@
         </Grid.RowDefinitions>
 
         <!-- 1. HEADER: LIVE ITEM PREVIEW CARD -->
-        <Border Grid.Row="0" Background="#181822" CornerRadius="8" Padding="12" Margin="0,0,0,12" BorderBrush="#2E2E3E" BorderThickness="1">
+        <ui:Card Grid.Row="0" Padding="12" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/> <!-- Live Slot Box -->
@@ -71,10 +51,10 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- LIVE ITEM PREVIEW BOX -->
-                <Border Grid.Column="0" Width="56" Height="56" Background="#121218" BorderBrush="#55FF55" BorderThickness="2" CornerRadius="6" Margin="0,0,14,0">
+                <Border Grid.Column="0" Width="56" Height="56" Background="#0A0D14" BorderBrush="#38BDF8" BorderThickness="2" CornerRadius="8" Margin="0,0,14,0">
                     <Grid ClipToBounds="True">
                         <!-- Background Enchant Glow -->
-                        <Border x:Name="PvwEnchantGlow" Background="#44AA00AA" CornerRadius="4" Margin="2" Visibility="Collapsed"/>
+                        <Border x:Name="PvwEnchantGlow" Background="#44AA00AA" CornerRadius="6" Margin="2" Visibility="Collapsed"/>
 
                         <!-- Item PNG Image -->
                         <Image x:Name="ImgItemPreview" Width="38" Height="38" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor">
@@ -104,14 +84,14 @@
 
                 <!-- MIDDLE: SLOT INFO & DYNAMIC NAME -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtSlotLocation" Text="Slot: Main Inventory #0" FontSize="14" FontWeight="Bold" Foreground="#55FF55"/>
-                    <TextBlock x:Name="TxtItemCategory" Text="Slot Kosong" FontSize="12" Foreground="#FFAA00" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="TxtSlotLocation" Text="Slot: Main Inventory #0" FontSize="14" FontWeight="Bold" Foreground="#38BDF8"/>
+                    <TextBlock x:Name="TxtItemCategory" Text="Slot Kosong" FontSize="12" Foreground="#F59E0B" FontWeight="SemiBold" Margin="0,2,0,0"/>
                 </StackPanel>
 
                 <!-- RIGHT: CLEAR SLOT BUTTON -->
-                <Button Grid.Column="2" Content="✕ Kosongkan Slot" Background="#5A1E1E" BorderBrush="#8A2E2E" Padding="14,8" FontWeight="Bold" VerticalAlignment="Center" Click="OnClearSlotClick"/>
+                <ui:Button Grid.Column="2" Icon="{ui:SymbolIcon Dismiss24}" Content="Kosongkan Slot" Appearance="Secondary" Foreground="#F87171" Padding="14,8" FontWeight="Bold" VerticalAlignment="Center" Click="OnClearSlotClick"/>
             </Grid>
-        </Border>
+        </ui:Card>
 
         <!-- 2. TWO-COLUMN FORM BODY -->
         <Grid Grid.Row="1" Margin="0,0,0,12">
@@ -122,149 +102,148 @@
             </Grid.ColumnDefinitions>
 
             <!-- LEFT COLUMN: Item Identity & Properties -->
-            <Border Grid.Column="0" Background="#181822" CornerRadius="8" Padding="14" BorderBrush="#2A2A3A" BorderThickness="1">
-                <StackPanel VerticalAlignment="Top">
-                    
-                    <!-- 1. Item ID Selector with Rich AutoComplete Popup -->
-                    <TextBlock Text="Pilih / Cari ID Item (Minecraft Identifier)" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" Margin="0,0,0,4"/>
-                    <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Search Input TextBox -->
-                        <TextBox x:Name="TxtItemSearch" 
-                                 Grid.Column="0"
-                                 Height="32" 
-                                 Padding="8,5" 
-                                 FontSize="12"
-                                 Background="#14141E"
-                                 Foreground="#FFFFFF"
-                                 BorderBrush="#38384C"
-                                 TextChanged="OnItemSearchTextChanged"
-                                 PreviewKeyDown="OnItemSearchPreviewKeyDown"
-                                 GotFocus="OnItemSearchGotFocus"/>
-
-                        <!-- Dropdown Toggle Button -->
-                        <Button Grid.Column="1" 
-                                Content="▼" 
-                                Width="30" 
-                                Height="32" 
-                                Padding="0" 
-                                FontSize="10"
-                                Background="#20202E" 
-                                BorderBrush="#38384C" 
-                                Click="OnToggleSuggestionsClick"/>
-
-                        <!-- Rich AutoComplete Popup -->
-                        <Popup x:Name="PopupSuggestions" 
-                               PlacementTarget="{Binding ElementName=TxtItemSearch}" 
-                               Placement="Bottom" 
-                               StaysOpen="False" 
-                               AllowsTransparency="True">
-                            <Border Background="#161622" 
-                                    BorderBrush="#3A3A52" 
-                                    BorderThickness="1" 
-                                    CornerRadius="6" 
-                                    Width="360" 
-                                    MaxHeight="260" 
-                                    Padding="4">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="4" Opacity="0.8"/>
-                                </Border.Effect>
-                                <ListBox x:Name="LstSuggestions" 
-                                         Background="Transparent" 
-                                         BorderThickness="0" 
-                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                         ScrollViewer.CanContentScroll="True"
-                                         VirtualizingStackPanel.IsVirtualizing="True"
-                                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                                         SelectionChanged="OnSuggestionSelected"
-                                         PreviewKeyDown="OnSuggestionsPreviewKeyDown">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Padding="6,4" CornerRadius="4">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- Texture Icon -->
-                                                    <Border Grid.Column="0" Width="30" Height="30" Background="#1E1E2C" CornerRadius="4" Margin="0,0,10,0">
-                                                        <Grid>
-                                                            <Image Source="{Binding Id, Converter={StaticResource ItemImage}}" 
-                                                                   Width="24" Height="24" 
-                                                                   HorizontalAlignment="Center" 
-                                                                   VerticalAlignment="Center" 
-                                                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                                                   Visibility="{Binding Id, Converter={StaticResource HasImageToVis}}"/>
-                                                            <TextBlock Text="{Binding Icon}" 
-                                                                       FontSize="16" 
-                                                                       HorizontalAlignment="Center" 
-                                                                       VerticalAlignment="Center" 
-                                                                       Visibility="{Binding Id, Converter={StaticResource HasImageToVis}, ConverterParameter=Invert}"/>
-                                                        </Grid>
-                                                    </Border>
-
-                                                    <!-- Display Name & ID -->
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
-                                                        <TextBlock Text="{Binding Id}" FontSize="10" Foreground="#8888AA" TextTrimming="CharacterEllipsis"/>
-                                                    </StackPanel>
-
-                                                    <!-- Category Badge -->
-                                                    <Border Grid.Column="2" Background="#222234" BorderBrush="#35354A" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Margin="6,0,0,0">
-                                                        <TextBlock Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="#FFAA00"/>
-                                                    </Border>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </Border>
-                        </Popup>
-                    </Grid>
-
-                    <!-- 2. Count (Jumlah Item) -->
-                    <TextBlock Text="Jumlah Item (Count)" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtCount" Text="1" Height="30" TextAlignment="Left" Padding="8,4" Margin="0,0,0,10" TextChanged="OnFormValuesChanged"/>
-
-                    <!-- 3. Durabilitas Baris Baru (Persentase di luar kurung & Warna Harmonis) -->
-                    <StackPanel x:Name="PnlDurability" Margin="0,0,0,10">
-                        <TextBlock x:Name="TxtDurabilityHeader" FontWeight="Bold" FontSize="12" Margin="0,0,0,4">
-                            <Run Text="Durabilitas " Foreground="#FFFFFF"/>
-                            <Run x:Name="RunDurabilityRatio" Text="(2031 / 2031)" Foreground="#CCCCCC" FontWeight="Normal"/>
-                            <Run x:Name="RunDurabilityPercent" Text=" • 100% Sisa" Foreground="#55FF55" FontWeight="SemiBold"/>
-                        </TextBlock>
-                        <Grid>
+            <ui:Card Grid.Column="0" Padding="14" MinHeight="360" VerticalAlignment="Stretch">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel VerticalAlignment="Top">
+                        
+                        <!-- 1. Item ID Selector with Rich AutoComplete Popup -->
+                        <TextBlock Text="Pilih / Cari ID Item (Minecraft Identifier)" FontWeight="Bold" FontSize="12" Foreground="#F1F5F9" Margin="0,0,0,4"/>
+                        <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Current Durability Remaining Input -->
-                            <TextBox x:Name="TxtCurrentDurability" Grid.Column="0" Height="30" Padding="8,4" Text="2031" TextChanged="OnCurrentDurabilityChanged"/>
+                            <!-- Search Input TextBox -->
+                            <ui:TextBox x:Name="TxtItemSearch" 
+                                        Grid.Column="0"
+                                        Height="32" 
+                                        Padding="8,5" 
+                                        FontSize="12"
+                                        TextChanged="OnItemSearchTextChanged"
+                                        PreviewKeyDown="OnItemSearchPreviewKeyDown"
+                                        GotFocus="OnItemSearchGotFocus"/>
 
-                            <!-- Reset Durability Button -->
-                            <Button x:Name="BtnResetDurability" Grid.Column="2" Content="Reset Durabilitas" Background="#1E4430" BorderBrush="#3A7E56" Foreground="#85E3B3" FontWeight="Bold" Padding="14,4" ToolTip="Pulihkan durabilitas menjadi 100% penuh seperti baru" Click="OnResetDurabilityClick"/>
+                            <!-- Dropdown Toggle Button -->
+                            <ui:Button Grid.Column="1" 
+                                       Content="▼" 
+                                       Width="30" 
+                                       Height="32" 
+                                       Padding="0" 
+                                       FontSize="10"
+                                       Appearance="Secondary"
+                                       Margin="4,0,0,0"
+                                       Click="OnToggleSuggestionsClick"/>
+
+                            <!-- Rich AutoComplete Popup -->
+                            <Popup x:Name="PopupSuggestions" 
+                                   PlacementTarget="{Binding ElementName=TxtItemSearch}" 
+                                   Placement="Bottom" 
+                                   StaysOpen="False" 
+                                   AllowsTransparency="True">
+                                <Border Background="#141C2E" 
+                                        BorderBrush="#22304E" 
+                                        BorderThickness="1" 
+                                        CornerRadius="8" 
+                                        Width="360" 
+                                        MaxHeight="260" 
+                                        Padding="4">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="4" Opacity="0.8"/>
+                                    </Border.Effect>
+                                    <ListBox x:Name="LstSuggestions" 
+                                             Background="Transparent" 
+                                             BorderThickness="0" 
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             ScrollViewer.CanContentScroll="True"
+                                             VirtualizingStackPanel.IsVirtualizing="True"
+                                             VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                             SelectionChanged="OnSuggestionSelected"
+                                             PreviewKeyDown="OnSuggestionsPreviewKeyDown">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="6,4" CornerRadius="4">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Texture Icon -->
+                                                        <Border Grid.Column="0" Width="30" Height="30" Background="#0D111A" CornerRadius="4" Margin="0,0,10,0">
+                                                            <Grid>
+                                                                <Image Source="{Binding Id, Converter={StaticResource ItemImage}}" 
+                                                                       Width="24" Height="24" 
+                                                                       HorizontalAlignment="Center" 
+                                                                       VerticalAlignment="Center" 
+                                                                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                                       Visibility="{Binding Id, Converter={StaticResource HasImageToVis}}"/>
+                                                                <TextBlock Text="{Binding Icon}" 
+                                                                           FontSize="16" 
+                                                                           HorizontalAlignment="Center" 
+                                                                           VerticalAlignment="Center" 
+                                                                           Visibility="{Binding Id, Converter={StaticResource HasImageToVis}, ConverterParameter=Invert}"/>
+                                                            </Grid>
+                                                        </Border>
+
+                                                        <!-- Display Name & ID -->
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="12" Foreground="#F1F5F9" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="{Binding Id}" FontSize="10" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+                                                        </StackPanel>
+
+                                                        <!-- Category Badge -->
+                                                        <Border Grid.Column="2" Background="#1C2438" BorderBrush="#2A3858" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Margin="6,0,0,0">
+                                                            <TextBlock Text="{Binding Category}" FontSize="9" FontWeight="SemiBold" Foreground="#F59E0B"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Popup>
                         </Grid>
+
+                        <!-- 2. Count (Jumlah Item) -->
+                        <TextBlock Text="Jumlah Item (Count)" FontWeight="Bold" FontSize="12" Foreground="#F1F5F9" Margin="0,0,0,4"/>
+                        <ui:TextBox x:Name="TxtCount" Text="1" Height="30" TextAlignment="Left" Padding="8,4" Margin="0,0,0,10" TextChanged="OnFormValuesChanged"/>
+
+                        <!-- 3. Durabilitas Baris Baru (Persentase di luar kurung & Warna Harmonis) -->
+                        <StackPanel x:Name="PnlDurability" Margin="0,0,0,10">
+                            <TextBlock x:Name="TxtDurabilityHeader" FontWeight="Bold" FontSize="12" Margin="0,0,0,4">
+                                <Run Text="Durabilitas " Foreground="#F1F5F9"/>
+                                <Run x:Name="RunDurabilityRatio" Text="(2031 / 2031)" Foreground="#94A3B8" FontWeight="Normal"/>
+                                <Run x:Name="RunDurabilityPercent" Text=" • 100% Sisa" Foreground="#10B981" FontWeight="SemiBold"/>
+                            </TextBlock>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Current Durability Remaining Input -->
+                                <ui:TextBox x:Name="TxtCurrentDurability" Grid.Column="0" Height="30" Padding="8,4" Text="2031" TextChanged="OnCurrentDurabilityChanged"/>
+
+                                <!-- Reset Durability Button -->
+                                <ui:Button x:Name="BtnResetDurability" Grid.Column="2" Icon="{ui:SymbolIcon ArrowClockwise24}" Content="Reset" Appearance="Secondary" Foreground="#10B981" FontWeight="Bold" Padding="12,4" ToolTip="Pulihkan durabilitas menjadi 100% penuh seperti baru" Click="OnResetDurabilityClick"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <Border Height="1" Background="#1C2438" Margin="0,2,0,10"/>
+
+                        <!-- 4. Custom Display Name -->
+                        <TextBlock Text="Nama Kustom (Display Name)" FontWeight="Bold" FontSize="12" Foreground="#F1F5F9" Margin="0,0,0,4"/>
+                        <ui:TextBox x:Name="TxtCustomName" Height="30" Margin="0,0,0,4" TextChanged="OnFormValuesChanged"/>
+                        <TextBlock Text="*Kosongkan untuk menggunakan nama asli default item tanpa tag tambahan." FontSize="10" Foreground="#64748B" TextWrapping="Wrap"/>
                     </StackPanel>
-
-                    <Separator Background="#2A2A3A" Margin="0,2,0,10"/>
-
-                    <!-- 4. Custom Display Name -->
-                    <TextBlock Text="Nama Kustom (Display Name)" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtCustomName" Height="30" Margin="0,0,0,4" TextChanged="OnFormValuesChanged"/>
-                    <TextBlock Text="*Kosongkan untuk menggunakan nama asli default item tanpa tag tambahan." FontSize="10" Foreground="#8888AA" TextWrapping="Wrap"/>
-                </StackPanel>
-            </Border>
+                </ScrollViewer>
+            </ui:Card>
 
             <!-- RIGHT COLUMN: Enchantments Manager -->
-            <Border Grid.Column="2" Background="#181822" CornerRadius="8" Padding="14" BorderBrush="#2A2A3A" BorderThickness="1">
+            <ui:Card Grid.Column="2" Padding="14" MinHeight="360" VerticalAlignment="Stretch">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Title & Max Button -->
@@ -275,114 +254,116 @@
 
                     <!-- Title & Max Button -->
                     <DockPanel Grid.Row="0" Margin="0,0,0,10">
-                        <TextBlock Text="Enchantment Manager" FontWeight="Bold" FontSize="14" Foreground="#FFAAFF" VerticalAlignment="Center"/>
-                        <Button Content="⚡ Max All Enchants" HorizontalAlignment="Right" Padding="8,4" FontSize="11" Background="#3A1E4A" BorderBrush="#8A3E9A" Click="OnMaxValidEnchantsClick"/>
+                        <TextBlock Text="Enchantment Manager" FontWeight="Bold" FontSize="14" Foreground="#E9D5FF" VerticalAlignment="Center"/>
+                        <ui:Button Icon="{ui:SymbolIcon Flash24}" Content="Max All Enchants" HorizontalAlignment="Right" Padding="8,4" FontSize="11" Appearance="Secondary" Click="OnMaxValidEnchantsClick"/>
                     </DockPanel>
 
                     <!-- Add Enchantment Form Row -->
                     <Grid Grid.Row="1" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="75"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <ComboBox x:Name="CmbEnchantments" Grid.Column="0" Margin="0,0,6,0" DisplayMemberPath="Name" Height="30"/>
-                        <TextBox x:Name="TxtEnchantLevel" Grid.Column="1" Text="1" TextAlignment="Center" Margin="0,0,6,0" Height="30" ToolTip="Level Enchant (1 - 32767)"/>
-                        <Button Grid.Column="2" Content="+ Pasang" Padding="12,4" FontWeight="Bold" Background="#254A25" BorderBrush="#4CAF50" Click="OnAddEnchantmentClick"/>
+                        <ComboBox x:Name="CmbEnchantments" Grid.Column="0" Margin="0,0,6,0" DisplayMemberPath="Name" Height="34" VerticalContentAlignment="Center" Padding="10,0"/>
+                        <ui:TextBox x:Name="TxtEnchantLevel" Grid.Column="1" Text="1" MaxLength="5" ClearButtonEnabled="False" TextAlignment="Center" FontWeight="Bold" FontSize="12" VerticalContentAlignment="Center" Margin="0,0,6,0" Height="34" ToolTip="Level Enchant (1 - 32767)" PreviewTextInput="OnEnchantLevelPreviewTextInput" TextChanged="OnEnchantLevelTextChanged" LostFocus="OnEnchantLevelLostFocus"/>
+                        <ui:Button Grid.Column="2" Content="+ Tambah" Height="34" Padding="14,0" FontWeight="Bold" Appearance="Primary" VerticalAlignment="Center" Click="OnAddEnchantmentClick"/>
                     </Grid>
 
                     <!-- Active Enchantments List with Before/After Diff Styling -->
-                    <Border Grid.Row="2" Background="#121218" CornerRadius="6" BorderBrush="#2A2A3A" BorderThickness="1" Padding="4">
-                        <ListBox x:Name="LstEnchantments" Background="Transparent" BorderThickness="0">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="5" Padding="8,6" Margin="0,0,0,4" BorderThickness="1">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#1C1C28"/>
-                                                <Setter Property="BorderBrush" Value="#2E2E40"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsNew}" Value="True">
-                                                        <Setter Property="Background" Value="#13241A"/>
-                                                        <Setter Property="BorderBrush" Value="#2A6B3D"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding HasLevelChange}" Value="True">
-                                                        <Setter Property="Background" Value="#291E12"/>
-                                                        <Setter Property="BorderBrush" Value="#805520"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            
-                                            <!-- Enchantment Name & Before Subtitle -->
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#FFFFFF" FontSize="12"/>
-                                                <TextBlock Text="{Binding ChangeTag}" FontSize="9" FontWeight="Bold" Foreground="#FFAA00" Margin="0,1,0,0" Visibility="{Binding HasLevelChange, Converter={StaticResource BoolToVis}}"/>
-                                            </StackPanel>
-
-                                            <!-- Dynamic Level Badges (Before / After) -->
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0">
+                    <Border Grid.Row="2" Background="#0A0D14" CornerRadius="6" BorderBrush="#1C2438" BorderThickness="1" Padding="4" Margin="0,0,0,6" MinHeight="220">
+                        <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="LstEnchantments">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="6" Padding="10,6" Margin="0,0,0,3" BorderThickness="1">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#141C2E"/>
+                                                    <Setter Property="BorderBrush" Value="#22304E"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsNew}" Value="True">
+                                                            <Setter Property="Background" Value="#112218"/>
+                                                            <Setter Property="BorderBrush" Value="#1C452E"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding HasLevelChange}" Value="True">
+                                                            <Setter Property="Background" Value="#241B12"/>
+                                                            <Setter Property="BorderBrush" Value="#4A341E"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
                                                 
-                                                <!-- 1. Unchanged Badge (Purple) -->
-                                                <Border Background="#3B1C4C" BorderBrush="#9C4EC2" BorderThickness="1" CornerRadius="4" Padding="8,2" Visibility="{Binding IsUnchanged, Converter={StaticResource BoolToVis}}">
-                                                    <TextBlock Text="{Binding LevelDisplay}" Foreground="#F0C0FF" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
-                                                </Border>
-
-                                                <!-- 2. Modified Badge (Amber/Orange Lvl 1 -> Lvl 5) -->
-                                                <Border Background="#45270F" BorderBrush="#FF9A24" BorderThickness="1" CornerRadius="4" Padding="7,2" Visibility="{Binding HasLevelChange, Converter={StaticResource BoolToVis}}">
-                                                    <TextBlock Text="{Binding LevelChangeText}" Foreground="#FFD278" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
-                                                </Border>
-
-                                                <!-- 3. New Badge (Green + BARU tag) -->
-                                                <StackPanel Orientation="Horizontal" Visibility="{Binding IsNew, Converter={StaticResource BoolToVis}}">
-                                                    <Border Background="#183D25" BorderBrush="#3DB868" BorderThickness="1" CornerRadius="4" Padding="7,2" Margin="0,0,4,0">
-                                                        <TextBlock Text="{Binding LevelDisplay}" Foreground="#86EFAC" FontWeight="Bold" FontSize="11"/>
-                                                    </Border>
-                                                    <Border Background="#225934" BorderBrush="#4ADE80" BorderThickness="1" CornerRadius="3" Padding="4,1">
-                                                        <TextBlock Text="+ BARU" Foreground="#4ADE80" FontWeight="ExtraBold" FontSize="9" VerticalAlignment="Center"/>
-                                                    </Border>
+                                                <!-- Enchantment Name & Before Subtitle -->
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#F1F5F9" FontSize="12"/>
+                                                    <TextBlock Text="{Binding ChangeTag}" FontSize="9" FontWeight="Bold" Foreground="#F59E0B" Margin="0,1,0,0" Visibility="{Binding HasLevelChange, Converter={StaticResource BoolToVis}}"/>
                                                 </StackPanel>
-                                            </StackPanel>
 
-                                            <!-- Remove Button -->
-                                            <Button Grid.Column="2" Content="✕" Width="24" Height="24" Padding="0" Background="#4A1E1E" BorderBrush="#8A2E2E" Tag="{Binding}" Click="OnRemoveEnchantmentClick"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                                                <!-- Dynamic Level Badges (Before / After) -->
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                                                    
+                                                    <!-- 1. Unchanged Badge (Purple) -->
+                                                    <Border Background="#201630" BorderBrush="#4A2E70" BorderThickness="1" CornerRadius="4" Padding="8,2" Visibility="{Binding IsUnchanged, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="{Binding LevelDisplay}" Foreground="#E9D5FF" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                                    </Border>
+
+                                                    <!-- 2. Modified Badge (Amber/Orange Lvl 1 -> Lvl 5) -->
+                                                    <Border Background="#2E1C0E" BorderBrush="#6B3E18" BorderThickness="1" CornerRadius="4" Padding="7,2" Visibility="{Binding HasLevelChange, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="{Binding LevelChangeText}" Foreground="#FDE68A" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                                    </Border>
+
+                                                    <!-- 3. New Badge (Green + BARU tag) -->
+                                                    <StackPanel Orientation="Horizontal" Visibility="{Binding IsNew, Converter={StaticResource BoolToVis}}">
+                                                        <Border Background="#112218" BorderBrush="#1C452E" BorderThickness="1" CornerRadius="4" Padding="7,2" Margin="0,0,4,0">
+                                                            <TextBlock Text="{Binding LevelDisplay}" Foreground="#86EFAC" FontWeight="Bold" FontSize="11"/>
+                                                        </Border>
+                                                        <Border Background="#163824" BorderBrush="#2E7D4C" BorderThickness="1" CornerRadius="3" Padding="4,1">
+                                                            <TextBlock Text="+ BARU" Foreground="#4ADE80" FontWeight="ExtraBold" FontSize="9" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                                <!-- Remove Button -->
+                                                <ui:Button Grid.Column="2" Content="✕" Width="26" Height="26" Padding="0" Appearance="Secondary" Foreground="#F87171" FontWeight="Bold" VerticalAlignment="Center" Tag="{Binding}" Click="OnRemoveEnchantmentClick"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Border>
 
                     <!-- Row 3: Before-After Diff Summary Banner -->
-                    <Border x:Name="PnlDiffSummary" Grid.Row="3" Background="#14141E" CornerRadius="6" BorderBrush="#2E2E42" BorderThickness="1" Padding="8,6" Margin="0,6,0,0" Visibility="Collapsed">
+                    <Border x:Name="PnlDiffSummary" Grid.Row="3" Background="#0D111A" CornerRadius="6" BorderBrush="#1C2438" BorderThickness="1" Padding="8,6" Margin="0,6,0,0" Visibility="Collapsed">
                         <DockPanel LastChildFill="False">
-                            <TextBlock Text="Perubahan:" FontWeight="Bold" FontSize="11" Foreground="#8888AA" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <Border x:Name="BadgeDiffNew" Background="#142C1E" BorderBrush="#2E804E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
+                            <TextBlock Text="Perubahan:" FontWeight="Bold" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <Border x:Name="BadgeDiffNew" Background="#112218" BorderBrush="#1C452E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
                                 <TextBlock x:Name="TxtDiffNew" Text="+1 Baru" Foreground="#4ADE80" FontSize="10" FontWeight="Bold"/>
                             </Border>
-                            <Border x:Name="BadgeDiffMod" Background="#352410" BorderBrush="#9E621E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
+                            <Border x:Name="BadgeDiffMod" Background="#241B12" BorderBrush="#4A341E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
                                 <TextBlock x:Name="TxtDiffMod" Text="~1 Diubah" Foreground="#FBBF24" FontSize="10" FontWeight="Bold"/>
                             </Border>
-                            <Border x:Name="BadgeDiffRem" Background="#361717" BorderBrush="#8A2E2E" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
+                            <Border x:Name="BadgeDiffRem" Background="#241418" BorderBrush="#4A202A" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed">
                                 <TextBlock x:Name="TxtDiffRem" Text="-1 Dihapus" Foreground="#F87171" FontSize="10" FontWeight="Bold"/>
                             </Border>
                         </DockPanel>
                     </Border>
                 </Grid>
-            </Border>
+            </ui:Card>
         </Grid>
 
         <!-- 3. BOTTOM ACTIONS: SAVE & CANCEL -->
         <Border Grid.Row="2" Padding="0,4,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Batal" Width="90" Margin="0,0,10,0" Click="OnCancelClick"/>
-                <Button Content="Terapkan ke Slot" Background="#1E6B23" BorderBrush="#4CAF50" FontWeight="Bold" Padding="18,6" Click="OnSaveClick"/>
+                <ui:Button Content="Batal" Width="90" Margin="0,0,10,0" Appearance="Secondary" Click="OnCancelClick"/>
+                <ui:Button Icon="{ui:SymbolIcon Checkmark24}" Content="Terapkan ke Slot" Appearance="Primary" FontWeight="Bold" Padding="18,6" Click="OnSaveClick"/>
             </StackPanel>
         </Border>
     </Grid>
