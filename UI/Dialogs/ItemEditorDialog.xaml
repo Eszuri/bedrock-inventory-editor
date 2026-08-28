@@ -283,12 +283,12 @@
                     <Grid Grid.Row="1" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="65"/>
+                            <ColumnDefinition Width="70"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <ComboBox x:Name="CmbEnchantments" Grid.Column="0" Margin="0,0,6,0" DisplayMemberPath="Name" Height="30"/>
-                        <TextBox x:Name="TxtEnchantLevel" Grid.Column="1" Text="5" TextAlignment="Center" Margin="0,0,6,0" Height="30"/>
-                        <Button Grid.Column="2" Content="+ Pasang" Padding="10,4" FontWeight="Bold" Background="#254A25" BorderBrush="#4CAF50" Click="OnAddEnchantmentClick"/>
+                        <TextBox x:Name="TxtEnchantLevel" Grid.Column="1" Text="1" TextAlignment="Center" Margin="0,0,6,0" Height="30" ToolTip="Level Enchant (1 - 32767)"/>
+                        <Button Grid.Column="2" Content="+ Pasang" Padding="12,4" FontWeight="Bold" Background="#254A25" BorderBrush="#4CAF50" Click="OnAddEnchantmentClick"/>
                     </Grid>
 
                     <!-- Active Enchantments List with Before/After Diff Styling -->

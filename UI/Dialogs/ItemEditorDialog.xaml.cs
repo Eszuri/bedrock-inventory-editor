@@ -382,9 +382,9 @@ public partial class ItemEditorDialog : Window
     private void OnAddEnchantmentClick(object sender, RoutedEventArgs e)
     {
         if (CmbEnchantments.SelectedItem is EnchantmentInfo selectedEnch &&
-            short.TryParse(TxtEnchantLevel.Text, out var lvl))
+            int.TryParse(TxtEnchantLevel.Text, out var parsedLvl))
         {
-            if (lvl < 1) lvl = 1;
+            short lvl = (short)Math.Clamp(parsedLvl, 1, 32767);
             var origLvl = _initialEnchantments.TryGetValue(selectedEnch.Id, out var oLvl) ? (short?)oLvl : null;
 
             // Remove any mutually exclusive / conflicting enchantments already on this item

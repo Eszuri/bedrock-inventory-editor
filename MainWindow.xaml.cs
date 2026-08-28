@@ -676,23 +676,18 @@ public partial class MainWindow : Window
         ChkHardcore.IsChecked = _worldSettings.IsHardcore;
 
         TxtDayCount.Text = _worldSettings.DayCount.ToString();
-        SliderTimeOfDay.Value = _worldSettings.TimeOfDay;
+        TxtTimeOfDay.Text = _worldSettings.TimeOfDay.ToString();
         UpdateTimeOfDayLabel(_worldSettings.TimeOfDay);
         ChkDaylightCycle.IsChecked = _worldSettings.DoDaylightCycle;
 
         CmbWeather.SelectedIndex = Math.Clamp(_worldSettings.WeatherType, 0, 2);
         ChkWeatherCycle.IsChecked = _worldSettings.DoWeatherCycle;
 
-        SliderHealth.Value = Math.Clamp(_worldSettings.Health, 1, 40);
-        TxtHealthLabel.Text = $"{_worldSettings.Health:0.#} / {_worldSettings.MaxHealth:0.#} HP";
-
-        SliderHunger.Value = Math.Clamp(_worldSettings.Hunger, 0, 20);
-        TxtHungerLabel.Text = $"{_worldSettings.Hunger:0.#} / 20.0";
-
+        TxtHealth.Text = _worldSettings.Health.ToString("0.#");
+        TxtHunger.Text = _worldSettings.Hunger.ToString("0.#");
         TxtSaturation.Text = _worldSettings.Saturation.ToString("0.#");
         TxtXpLevel.Text = _worldSettings.XpLevel.ToString();
-        SliderXpProgress.Value = Math.Clamp((int)(_worldSettings.XpProgress * 100), 0, 100);
-        TxtXpProgressLabel.Text = $"{(int)(_worldSettings.XpProgress * 100)}% Progress";
+        TxtXpProgress.Text = ((int)(_worldSettings.XpProgress * 100)).ToString();
 
         TxtPlayerPosX.Text = _worldSettings.PosX.ToString("0.##");
         TxtPlayerPosY.Text = _worldSettings.PosY.ToString("0.##");
@@ -751,9 +746,59 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnHealthFullClick(object sender, RoutedEventArgs e) => SliderHealth.Value = 20;
-    private void OnHealthDoubleClick(object sender, RoutedEventArgs e) => SliderHealth.Value = 40;
-    private void OnHungerFullClick(object sender, RoutedEventArgs e) { SliderHunger.Value = 20; TxtSaturation.Text = "20"; }
+    private void OnTimeDecrementClick(object sender, RoutedEventArgs e)
+    {
+        if (int.TryParse(TxtTimeOfDay.Text, out var t))
+        {
+            int next = (t - 1000 + 24000) % 24000;
+            TxtTimeOfDay.Text = next.ToString();
+        }
+    }
+
+    private void OnTimeIncrementClick(object sender, RoutedEventArgs e)
+    {
+        if (int.TryParse(TxtTimeOfDay.Text, out var t))
+        {
+            int next = (t + 1000) % 24000;
+            TxtTimeOfDay.Text = next.ToString();
+        }
+    }
+
+    private void OnHealthDecrementClick(object sender, RoutedEventArgs e)
+    {
+        if (float.TryParse(TxtHealth.Text, out var h))
+        {
+            TxtHealth.Text = Math.Max(1f, h - 1f).ToString("0.#");
+        }
+    }
+
+    private void OnHealthIncrementClick(object sender, RoutedEventArgs e)
+    {
+        if (float.TryParse(TxtHealth.Text, out var h))
+        {
+            TxtHealth.Text = Math.Min(40f, h + 1f).ToString("0.#");
+        }
+    }
+
+    private void OnHungerDecrementClick(object sender, RoutedEventArgs e)
+    {
+        if (float.TryParse(TxtHunger.Text, out var h))
+        {
+            TxtHunger.Text = Math.Max(0f, h - 1f).ToString("0.#");
+        }
+    }
+
+    private void OnHungerIncrementClick(object sender, RoutedEventArgs e)
+    {
+        if (float.TryParse(TxtHunger.Text, out var h))
+        {
+            TxtHunger.Text = Math.Min(20f, h + 1f).ToString("0.#");
+        }
+    }
+
+    private void OnHealthFullClick(object sender, RoutedEventArgs e) => TxtHealth.Text = "20";
+    private void OnHealthDoubleClick(object sender, RoutedEventArgs e) => TxtHealth.Text = "40";
+    private void OnHungerFullClick(object sender, RoutedEventArgs e) { TxtHunger.Text = "20"; TxtSaturation.Text = "20"; }
     private void OnXpLevel30Click(object sender, RoutedEventArgs e) => TxtXpLevel.Text = "30";
     private void OnXpLevel100Click(object sender, RoutedEventArgs e) => TxtXpLevel.Text = "100";
     private void OnXpLevel1000Click(object sender, RoutedEventArgs e) => TxtXpLevel.Text = "1000";
@@ -792,35 +837,21 @@ public partial class MainWindow : Window
         TxtTimeOfDayLabel.Text = $"🕐 {totalHours:D2}:{totalMinutes:D2} ({ticks} ticks) • {period}";
     }
 
-    private void OnTimeOfDaySliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    private void OnTimeOfDayTextChanged(object sender, TextChangedEventArgs e)
     {
         if (!_isInitialized || _worldSettings == null) return;
-        _worldSettings.TimeOfDay = (int)SliderTimeOfDay.Value;
-        UpdateTimeOfDayLabel(_worldSettings.TimeOfDay);
+        if (int.TryParse(TxtTimeOfDay.Text, out var ticks))
+        {
+            ticks = Math.Clamp(ticks, 0, 24000);
+            _worldSettings.TimeOfDay = ticks;
+            UpdateTimeOfDayLabel(ticks);
+        }
     }
 
-    private void OnPresetMorningClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 1000;
-    private void OnPresetNoonClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 6000;
-    private void OnPresetSunsetClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 12000;
-    private void OnPresetMidnightClick(object sender, RoutedEventArgs e) => SliderTimeOfDay.Value = 18000;
-
-    private void OnHealthSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (!_isInitialized) return;
-        TxtHealthLabel.Text = $"{SliderHealth.Value:0.#} / {Math.Max(20, SliderHealth.Value):0.#} HP ({(int)(SliderHealth.Value / 2)} Hati)";
-    }
-
-    private void OnHungerSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (!_isInitialized) return;
-        TxtHungerLabel.Text = $"{SliderHunger.Value:0.#} / 20.0";
-    }
-
-    private void OnXpProgressSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (!_isInitialized) return;
-        TxtXpProgressLabel.Text = $"{(int)SliderXpProgress.Value}% Progress";
-    }
+    private void OnPresetMorningClick(object sender, RoutedEventArgs e) => TxtTimeOfDay.Text = "1000";
+    private void OnPresetNoonClick(object sender, RoutedEventArgs e) => TxtTimeOfDay.Text = "6000";
+    private void OnPresetSunsetClick(object sender, RoutedEventArgs e) => TxtTimeOfDay.Text = "12000";
+    private void OnPresetMidnightClick(object sender, RoutedEventArgs e) => TxtTimeOfDay.Text = "18000";
 
     private void OnRestoreAchievementsClick(object sender, RoutedEventArgs e)
     {
@@ -862,18 +893,21 @@ public partial class MainWindow : Window
         _worldSettings.IsHardcore = ChkHardcore.IsChecked == true;
 
         if (long.TryParse(TxtDayCount.Text, out var day)) _worldSettings.DayCount = day;
-        _worldSettings.TimeOfDay = (int)SliderTimeOfDay.Value;
+        if (int.TryParse(TxtTimeOfDay.Text, out var t)) _worldSettings.TimeOfDay = Math.Clamp(t, 0, 24000);
         _worldSettings.DoDaylightCycle = ChkDaylightCycle.IsChecked == true;
 
         _worldSettings.WeatherType = CmbWeather.SelectedIndex;
         _worldSettings.DoWeatherCycle = ChkWeatherCycle.IsChecked == true;
 
-        _worldSettings.Health = (float)SliderHealth.Value;
-        _worldSettings.MaxHealth = Math.Max(20f, (float)SliderHealth.Value);
-        _worldSettings.Hunger = (float)SliderHunger.Value;
+        if (float.TryParse(TxtHealth.Text, out var hp))
+        {
+            _worldSettings.Health = Math.Clamp(hp, 1f, 40f);
+            _worldSettings.MaxHealth = Math.Max(20f, _worldSettings.Health);
+        }
+        if (float.TryParse(TxtHunger.Text, out var hunger)) _worldSettings.Hunger = Math.Clamp(hunger, 0f, 20f);
         if (float.TryParse(TxtSaturation.Text, out var sat)) _worldSettings.Saturation = sat;
         if (int.TryParse(TxtXpLevel.Text, out var xpLvl)) _worldSettings.XpLevel = xpLvl;
-        _worldSettings.XpProgress = (float)(SliderXpProgress.Value / 100.0);
+        if (int.TryParse(TxtXpProgress.Text, out var xpProg)) _worldSettings.XpProgress = (float)Math.Clamp(xpProg / 100.0, 0.0, 1.0);
 
         if (double.TryParse(TxtPlayerPosX.Text, out var px)) _worldSettings.PosX = px;
         if (double.TryParse(TxtPlayerPosY.Text, out var py)) _worldSettings.PosY = py;
