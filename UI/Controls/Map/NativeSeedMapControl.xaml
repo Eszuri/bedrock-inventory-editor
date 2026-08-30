@@ -1,0 +1,261 @@
+<UserControl x:Class="BedrockInventoryEditor.UI.Controls.Map.NativeSeedMapControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="1000"
+             Background="#0A0D14"
+             Focusable="True"
+             ClipToBounds="True">
+
+    <Grid x:Name="RootGrid" SizeChanged="OnRootGridSizeChanged">
+        <!-- 1. MAP VIEWPORT (IMAGE + OVERLAY CANVAS) -->
+        <Border Background="#080A10" ClipToBounds="True"
+                MouseDown="OnViewportMouseDown"
+                MouseMove="OnViewportMouseMove"
+                MouseUp="OnViewportMouseUp"
+                MouseWheel="OnViewportMouseWheel"
+                MouseLeave="OnViewportMouseLeave"
+                Cursor="Cross">
+
+            <Border.ContextMenu>
+                <ContextMenu Background="#141C2E" BorderBrush="#22304E" Foreground="#F1F5F9">
+                    <MenuItem Header="⚡ Teleport Pemain ke Titik Ini" Click="OnContextMenuTeleportClick" FontWeight="Bold" Foreground="#F59E0B"/>
+                    <MenuItem Header="📍 Pusatkan Peta di Titik Ini" Click="OnContextMenuCenterHereClick"/>
+                    <Separator Background="#1C2438"/>
+                    <MenuItem Header="📋 Salin Perintah /tp" Click="OnContextMenuCopyTpClick"/>
+                    <MenuItem Header="📋 Salin Koordinat (X, Z)" Click="OnContextMenuCopyCoordsClick"/>
+                    <MenuItem Header="🌐 Buka Titik Ini di Chunkbase Web" Click="OnContextMenuOpenChunkbaseClick"/>
+                </ContextMenu>
+            </Border.ContextMenu>
+
+            <Grid x:Name="ViewportGrid" ClipToBounds="True">
+                <!-- High-Performance WriteableBitmap Render Target -->
+                <Image x:Name="ImgMapRenderer" Stretch="Fill" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+
+                <!-- Vector Overlays Canvas (Pins, Grid, Slime Chunks, Structure Markers) -->
+                <Canvas x:Name="CanvasOverlay"/>
+
+                <!-- Loading / Rendering Progress Indicator -->
+                <Border x:Name="PnlRenderingStatus" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="14" Background="#CC0D111A" CornerRadius="6" Padding="10,5" BorderBrush="#22304E" BorderThickness="1" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔄 Merefresh Bioma Peta..." FontSize="10" Foreground="#38BDF8" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- 2. TOP FLOATING CONTROL BAR (BENTO GLASS BAR) -->
+        <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14,12" Background="#E60D111A" CornerRadius="8" Padding="10,6" BorderBrush="#22304E" BorderThickness="1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                
+                <!-- Dimension Switcher -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <TextBlock Text="🌍 Dimensi:" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <ComboBox x:Name="CmbDimension" Height="28" Width="110" FontSize="11" FontWeight="SemiBold" VerticalContentAlignment="Center" Padding="6,0" SelectionChanged="OnDimensionSelectionChanged">
+                        <ComboBoxItem Content="Overworld" Tag="0" IsSelected="True"/>
+                        <ComboBoxItem Content="The Nether" Tag="1"/>
+                        <ComboBoxItem Content="The End" Tag="2"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Structure Filter Toggle Button with Badge -->
+                <ui:Button x:Name="BtnToggleStructureFilter" Appearance="Secondary" Height="28" Padding="8,0" Margin="0,0,10,0" Click="OnToggleStructureFilterClick" ToolTip="Buka / Tutup Panel Filter Struktur Lengkap">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Image Source="pack://application:,,,/BedrockInventoryEditor;component/Assets/Structures/village.png" Width="16" Height="16" RenderOptions.BitmapScalingMode="NearestNeighbor" Margin="0,0,6,0"/>
+                        <TextBlock Text="Struktur &amp; Fitur" FontSize="11" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                        <Border x:Name="BadgeActiveStructures" Background="#20F59E0B" CornerRadius="4" Padding="5,1" Margin="6,0,0,0">
+                            <TextBlock x:Name="TxtActiveStructuresCount" Text="28" FontSize="10" FontWeight="Bold" Foreground="#F59E0B"/>
+                        </Border>
+                    </StackPanel>
+                </ui:Button>
+
+                <Border Width="1" Height="18" Background="#1C2438" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                <!-- Quick Layer Toggles -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox x:Name="ChkLayerBiomes" Content="Bioma" Foreground="#CBD5E1" FontSize="10" FontWeight="SemiBold" IsChecked="True" Checked="OnLayerToggleChanged" Unchecked="OnLayerToggleChanged" Margin="0,0,8,0"/>
+                    <CheckBox x:Name="ChkLayerSlime" Content="Slime Chunk" Foreground="#10B981" FontSize="10" FontWeight="SemiBold" IsChecked="True" Checked="OnLayerToggleChanged" Unchecked="OnLayerToggleChanged" Margin="0,0,8,0"/>
+                    <CheckBox x:Name="ChkLayerGrid" Content="Grid 16x16" Foreground="#94A3B8" FontSize="10" FontWeight="SemiBold" IsChecked="True" Checked="OnLayerToggleChanged" Unchecked="OnLayerToggleChanged" Margin="0,0,8,0"/>
+                    <CheckBox x:Name="ChkLayerContainers" Content="Peti LevelDB" Foreground="#38BDF8" FontSize="10" FontWeight="SemiBold" IsChecked="True" Checked="OnLayerToggleChanged" Unchecked="OnLayerToggleChanged" Margin="0,0,8,0"/>
+                    <CheckBox x:Name="ChkLayerPlayer" Content="Pemain" Foreground="#F43F5E" FontSize="10" FontWeight="Bold" IsChecked="True" Checked="OnLayerToggleChanged" Unchecked="OnLayerToggleChanged"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 3. TOP RIGHT ZOOM & QUICK NAVIGATION CONTROLS -->
+        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="14,12" Background="#E60D111A" CornerRadius="8" Padding="6" BorderBrush="#22304E" BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <ui:Button Icon="{ui:SymbolIcon Location24}" ToolTip="Pusatkan Peta ke Posisi Pemain" Width="30" Height="28" Padding="0" Appearance="Secondary" Click="OnCenterOnPlayerClick" Margin="0,0,4,0"/>
+                <ui:Button Icon="{ui:SymbolIcon Home24}" ToolTip="Pusatkan Peta ke Spawn (0, 0)" Width="30" Height="28" Padding="0" Appearance="Secondary" Click="OnCenterOnSpawnClick" Margin="0,0,4,0"/>
+                <ui:Button Content="➖" ToolTip="Zoom Out (Perkecil)" Width="28" Height="28" Padding="0" FontWeight="Bold" FontSize="11" Appearance="Secondary" Click="OnZoomOutClick" Margin="0,0,2,0"/>
+                
+                <TextBlock x:Name="TxtZoomLevel" Text="100%" Width="42" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" TextAlignment="Center" VerticalAlignment="Center"/>
+                
+                <ui:Button Content="➕" ToolTip="Zoom In (Perbesar)" Width="28" Height="28" Padding="0" FontWeight="Bold" FontSize="11" Appearance="Secondary" Click="OnZoomInClick" Margin="2,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 4. EXPANDABLE STRUCTURE CHIPS FILTER PANEL (CHUNKBASE STYLE) -->
+        <Border x:Name="PnlStructureFilterGrid" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14,54,0,0" Background="#F20D111A" CornerRadius="8" Padding="14,12" BorderBrush="#22304E" BorderThickness="1.5" MaxWidth="720" Visibility="Collapsed">
+            <StackPanel>
+                <!-- Header -->
+                <DockPanel LastChildFill="True" Margin="0,0,0,8">
+                    <ui:Button DockPanel.Dock="Right" Content="✕" Width="24" Height="24" Padding="0" FontSize="10" FontWeight="Bold" Appearance="Secondary" Click="OnCloseStructureFilterClick" ToolTip="Tutup Panel Filter"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🏛️ Filter Struktur &amp; Fitur Dunia (Resmi)" FontWeight="Bold" FontSize="12" Foreground="#F1F5F9"/>
+                        <TextBlock Text="— Pilih fitur yang ingin ditampilkan di peta" FontSize="10" Foreground="#64748B" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </DockPanel>
+
+                <!-- Structure Chips Grid / WrapPanel -->
+                <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="LstStructureFilters">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Click="OnStructureChipClicked" Margin="0,0,6,6" Padding="6,4" Height="30" Width="132" HorizontalContentAlignment="Left" Cursor="Hand">
+                                    <ToggleButton.Style>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Background" Value="#141C2E"/>
+                                            <Setter Property="BorderBrush" Value="#22304E"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                            <Setter Property="Foreground" Value="#94A3B8"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton">
+                                                        <Border x:Name="ChipBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter TargetName="ChipBorder" Property="Background" Value="#200284C7"/>
+                                                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="#38BDF8"/>
+                                                                <Setter TargetName="ChipBorder" Property="BorderThickness" Value="1.5"/>
+                                                                <Setter Property="Foreground" Value="#F1F5F9"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="#60A5FA"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Image Source="{Binding IconImage}" Width="16" Height="16" RenderOptions.BitmapScalingMode="NearestNeighbor" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Bottom Action Controls (Select all / Deselect all) -->
+                <Border Height="1" Background="#1C2438" Margin="0,8,0,8"/>
+                <DockPanel LastChildFill="True">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <ui:Button Icon="{ui:SymbolIcon Checkmark24}" Content="Pilih Semua (Select all)" FontSize="10" FontWeight="SemiBold" Padding="8,4" Margin="0,0,6,0" Appearance="Secondary" Click="OnSelectAllStructuresClick"/>
+                        <ui:Button Icon="{ui:SymbolIcon Dismiss24}" Content="Hapus Semua (Deselect all)" FontSize="10" FontWeight="SemiBold" Padding="8,4" Appearance="Secondary" Click="OnDeselectAllStructuresClick"/>
+                    </StackPanel>
+                    <TextBlock Text="Klik ikon/pin pada peta untuk info detail &amp; teleportasi" FontSize="10" Foreground="#64748B" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </DockPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 5. FLOATING PIN DETAIL CARD (SHOWN WHEN CLICKING AN ICON / PIN ON THE MAP) -->
+        <Border x:Name="PnlPinDetailCard" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="14,12" Background="#FA0D111A" CornerRadius="10" Padding="14,12" BorderBrush="#38BDF8" BorderThickness="1.5" MinWidth="320" MaxWidth="380" Visibility="Collapsed">
+            <StackPanel>
+                <!-- Header with Icon, Name, Dimension, and Close button -->
+                <DockPanel LastChildFill="True" Margin="0,0,0,10">
+                    <ui:Button DockPanel.Dock="Right" Content="✕" Width="24" Height="24" Padding="0" FontSize="10" FontWeight="Bold" Appearance="Secondary" Click="OnClosePinDetailCardClick" ToolTip="Tutup Panel Info"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#2038BDF8" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Padding="5" Margin="0,0,10,0">
+                            <Image x:Name="ImgDetailIcon" Width="22" Height="22" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtDetailTitle" Text="Woodland Mansion" FontWeight="Bold" FontSize="13" Foreground="#F1F5F9" TextTrimming="CharacterEllipsis"/>
+                            <Border x:Name="BadgeDetailDimension" Background="#20F59E0B" CornerRadius="4" Padding="5,1" Margin="0,2,0,0" HorizontalAlignment="Left">
+                                <TextBlock x:Name="TxtDetailDimension" Text="Overworld" FontSize="9" FontWeight="Bold" Foreground="#F59E0B"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </DockPanel>
+
+                <!-- Information Box -->
+                <Border Background="#141C2E" CornerRadius="6" Padding="10,8" Margin="0,0,0,10" BorderBrush="#1C2438" BorderThickness="1">
+                    <StackPanel>
+                        <!-- Coordinates -->
+                        <Grid Margin="0,0,0,4">
+                            <TextBlock Text="📍 Koordinat Blok:" FontSize="10" Foreground="#64748B"/>
+                            <TextBlock x:Name="TxtDetailCoords" Text="X: 0, Z: 0" FontSize="11" FontWeight="Bold" Foreground="#F1F5F9" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <!-- Chunk -->
+                        <Grid Margin="0,0,0,4">
+                            <TextBlock Text="🗺️ Koordinat Chunk:" FontSize="10" Foreground="#64748B"/>
+                            <TextBlock x:Name="TxtDetailChunk" Text="Chunk [0, 0] (0, 0)" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <!-- Biome -->
+                        <Grid Margin="0,0,0,4">
+                            <TextBlock Text="🌿 Bioma:" FontSize="10" Foreground="#64748B"/>
+                            <TextBlock x:Name="TxtDetailBiome" Text="Plains" FontSize="10" FontWeight="SemiBold" Foreground="#10B981" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <!-- Distance & Bearing -->
+                        <Grid>
+                            <TextBlock Text="🧭 Jarak dari Pemain:" FontSize="10" Foreground="#64748B"/>
+                            <TextBlock x:Name="TxtDetailDistance" Text="0 blok (Tepat di Lokasi)" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Action Buttons -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:Button Grid.Column="0" Icon="{ui:SymbolIcon Flash24}" Content="Teleport" Appearance="Primary" FontWeight="Bold" FontSize="11" Height="30" Margin="0,0,3,0" Click="OnDetailTeleportClick" ToolTip="Set posisi pemain ke koordinat ini"/>
+                    <ui:Button Grid.Column="1" Icon="{ui:SymbolIcon Copy24}" Content="Salin /tp" Appearance="Secondary" FontSize="11" Height="30" Margin="3,0,0,0" Click="OnDetailCopyTpClick" ToolTip="Salin perintah /tp ke clipboard"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 6. BOTTOM RIGHT FLOATING GLASS INSPECTOR HUD (HOVER MODE) -->
+        <Border x:Name="PnlInspectorHud" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="14,12" Background="#F00D111A" CornerRadius="8" Padding="12,10" BorderBrush="#22304E" BorderThickness="1" MinWidth="260" MaxWidth="360" Visibility="Visible">
+            <StackPanel>
+                <!-- Title / Biome Name -->
+                <DockPanel LastChildFill="True" Margin="0,0,0,4">
+                    <Border x:Name="BadgeSlimeIndicator" DockPanel.Dock="Right" Background="#112218" BorderBrush="#1C452E" BorderThickness="1" CornerRadius="3" Padding="6,1" Margin="6,0,0,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtHudSlime" Text="🟢 Slime" FontSize="9" FontWeight="Bold" Foreground="#10B981"/>
+                    </Border>
+                    <TextBlock x:Name="TxtHudBiome" Text="🌱 Plains (Dataran Rumput)" FontWeight="Bold" FontSize="12" Foreground="#F1F5F9" TextTrimming="CharacterEllipsis"/>
+                </DockPanel>
+
+                <!-- Coordinates & Chunk -->
+                <TextBlock x:Name="TxtHudCoords" Text="📍 X: 0, Z: 0 • Chunk: [0, 0] (0, 0)" FontSize="10" Foreground="#94A3B8" Margin="0,0,0,3"/>
+
+                <!-- Distance from Player -->
+                <TextBlock x:Name="TxtHudDistance" Text="🧭 Jarak: 0 blok • Arah: Tepat di Lokasi" FontSize="10" Foreground="#38BDF8" Margin="0,0,0,3"/>
+
+                <!-- Nearby Structure Indicator -->
+                <TextBlock x:Name="TxtHudStructure" Text="✨ Klik ikon untuk info lengkap atau klik kanan untuk teleportasi" FontSize="9" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 7. BOTTOM LEFT LEGEND & QUICK SHORTCUTS PILL -->
+        <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="14,12" Background="#E60D111A" CornerRadius="6" Padding="10,6" BorderBrush="#22304E" BorderThickness="1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="💡 Tips: " FontSize="10" FontWeight="Bold" Foreground="#38BDF8"/>
+                <TextBlock Text="Klik ikon/pin untuk info detail • Drag untuk geser • Scroll untuk zoom • Klik Kanan untuk Teleportasi" FontSize="10" Foreground="#64748B"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

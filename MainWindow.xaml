@@ -4,7 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:controls="clr-namespace:BedrockInventoryEditor.UI.Controls"
+        xmlns:map="clr-namespace:BedrockInventoryEditor.UI.Controls.Map"
         xmlns:converters="clr-namespace:BedrockInventoryEditor.UI.Converters"
         mc:Ignorable="d"
         Title="Minecraft Bedrock Inventory Editor" 
@@ -1049,6 +1051,77 @@
                                 </Grid>
                             </StackPanel>
                         </ScrollViewer>
+                    </TabItem>
+
+                    <!-- TAB 5: PETA SEED & STRUKTUR (NATIVE CANVAS SEED MAP) -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Map24" FontSize="18" Foreground="#38BDF8" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Peta Seed (Native Canvas)" FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+
+                        <Grid Margin="16,12,16,16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/> <!-- Top Controls Toolbar -->
+                                <RowDefinition Height="*"/>    <!-- Center Native Map Canvas Viewport -->
+                            </Grid.RowDefinitions>
+
+                            <!-- 1. TOP CONTROLS TOOLBAR -->
+                            <ui:Card Grid.Row="0" Padding="14,10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <!-- Row 1: Seed, Target Coords, Jump, Teleport, Actions -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/> <!-- Seed -->
+                                            <ColumnDefinition Width="14"/>
+                                            <ColumnDefinition Width="Auto"/> <!-- Target X/Z -->
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/> <!-- Action Buttons -->
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Seed Input -->
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock Text="SEED DUNIA AKTIF:" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ui:TextBox x:Name="TxtMapSeed" Grid.Column="0" Height="30" Padding="8,0" FontWeight="Bold" FontSize="12" Foreground="#38BDF8" VerticalContentAlignment="Center" PlaceholderText="Masukkan seed dunia..." TextChanged="OnMapSeedInputChanged"/>
+                                                <ui:Button x:Name="BtnCopyMapSeed" Grid.Column="1" Icon="{ui:SymbolIcon Copy24}" Margin="4,0,0,0" Padding="7,4" ToolTip="Salin Seed ke Clipboard" Appearance="Secondary" Click="OnCopyMapSeedClick"/>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <!-- Target Coordinates X & Z -->
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <TextBlock Text="LOMPAT KE KOORDINAT (X, Z):" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,3"/>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="X:" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                <ui:TextBox x:Name="TxtMapTargetX" Width="80" Height="30" Padding="6,0" Text="0" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
+                                                <TextBlock Text="Z:" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="8,0,4,0"/>
+                                                <ui:TextBox x:Name="TxtMapTargetZ" Width="80" Height="30" Padding="6,0" Text="0" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
+                                                <ui:Button Icon="{ui:SymbolIcon ArrowRight24}" Content="Tuju Titik" Height="30" Padding="12,0" Margin="8,0,0,0" Appearance="Primary" FontWeight="Bold" Click="OnNavigateSeedMapClick"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Right Quick Action Buttons -->
+                                        <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                            <ui:Button x:Name="BtnMapSyncPlayer" Icon="{ui:SymbolIcon Location24}" Content="📍 Lokasi Pemain" Padding="10,5" Margin="0,0,6,0" Appearance="Secondary" FontWeight="SemiBold" FontSize="11" Click="OnSyncPlayerLocationToMapClick" ToolTip="Pusatkan peta ke koordinat pemain saat ini"/>
+                                            <ui:Button x:Name="BtnMapSpawnPoint" Icon="{ui:SymbolIcon Home24}" Content="🏠 Spawn" Padding="10,5" Margin="0,0,6,0" Appearance="Secondary" FontSize="11" Click="OnGoToSpawnPointClick" ToolTip="Pusatkan peta ke titik spawn utama (0, 0)"/>
+                                            <ui:Button x:Name="BtnMapTeleportPlayer" Icon="{ui:SymbolIcon Flash24}" Content="⚡ Teleport Pemain" Padding="12,5" Margin="0,0,6,0" Appearance="Secondary" Foreground="#F59E0B" FontWeight="Bold" FontSize="11" Click="OnTeleportPlayerToMapCoordsClick" ToolTip="Ubah koordinat pemain ke titik koordinat target di atas"/>
+                                            <ui:Button x:Name="BtnMapReload" Icon="{ui:SymbolIcon ArrowClockwise24}" Content="Refresh" Padding="10,5" Appearance="Secondary" FontSize="11" Click="OnReloadSeedMapClick" ToolTip="Render ulang canvas peta"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <!-- 2. CENTER NATIVE MAP CANVAS VIEWPORT -->
+                            <Border Grid.Row="1" Background="#0A0D14" CornerRadius="8" BorderBrush="#1C263C" BorderThickness="1" ClipToBounds="True">
+                                <map:NativeSeedMapControl x:Name="NativeSeedMap" TeleportRequested="OnNativeSeedMapTeleportRequested"/>
+                            </Border>
+                        </Grid>
                     </TabItem>
 
                 </TabControl>

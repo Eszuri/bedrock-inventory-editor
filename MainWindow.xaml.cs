@@ -2,17 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using BedrockInventoryEditor.Core.Map;
 using BedrockInventoryEditor.Core.Models;
 using BedrockInventoryEditor.Core.Nbt;
 using BedrockInventoryEditor.Core.Registry;
 using BedrockInventoryEditor.Core.Storage;
 using BedrockInventoryEditor.UI.Controls;
 using BedrockInventoryEditor.UI.Dialogs;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
 
 namespace BedrockInventoryEditor;
@@ -718,6 +723,9 @@ public partial class MainWindow : Window
         ChkCheatsEnabled.IsChecked = _worldSettings.CheatsEnabled;
         ChkCommandsEnabled.IsChecked = _worldSettings.CommandsEnabled;
         UpdateAchievementBadge();
+
+        // Populate Seed Map Tab (Tab 5)
+        PopulateSeedMapUI();
     }
 
     private void OnCopySeedClick(object sender, RoutedEventArgs e)
@@ -975,6 +983,135 @@ public partial class MainWindow : Window
             MessageBoxButton.OK,
             MessageBoxImage.Information
         );
+    }
+
+    // =========================================================================
+    // 🗺️ PETA SEED & STRUKTUR (NATIVE CANVAS MAP INTEGRATION)
+    // =========================================================================
+
+    private void PopulateSeedMapUI()
+    {
+        if (_worldSettings == null) return;
+
+        TxtMapSeed.Text = _worldSettings.Seed.ToString();
+        TxtMapTargetX.Text = ((int)_playerPosX).ToString();
+        TxtMapTargetZ.Text = ((int)_playerPosZ).ToString();
+
+        NativeSeedMap.WorldSeed = _worldSettings.Seed;
+        NativeSeedMap.DimensionId = _worldSettings.Dimension;
+        NativeSeedMap.SetPlayerPosition(_playerPosX, _playerPosZ, _playerDimId);
+        NativeSeedMap.SetWorldSpawn(0, 0);
+        NativeSeedMap.SetContainers(_allLoadedContainers);
+        NativeSeedMap.CenterOn(_playerPosX, _playerPosZ, _playerDimId);
+    }
+
+    private void OnMapSeedInputChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!_isInitialized) return;
+        if (long.TryParse(TxtMapSeed.Text.Trim(), out var s))
+        {
+            NativeSeedMap.WorldSeed = s;
+        }
+    }
+
+    private void OnCopyMapSeedClick(object sender, RoutedEventArgs e)
+    {
+        var seed = TxtMapSeed.Text.Trim();
+        if (!string.IsNullOrEmpty(seed))
+        {
+            Clipboard.SetText(seed);
+            TxtStatus.Text = $"Seed '{seed}' berhasil disalin ke Clipboard! 📋";
+            MessageBox.Show($"Seed '{seed}' berhasil disalin ke Clipboard!", "Seed Disalin", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    private void OnNavigateSeedMapClick(object sender, RoutedEventArgs e)
+    {
+        if (double.TryParse(TxtMapTargetX.Text.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out double targetX) &&
+            double.TryParse(TxtMapTargetZ.Text.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out double targetZ))
+        {
+            NativeSeedMap.CenterOn(targetX, targetZ);
+            TxtStatus.Text = $"Peta dipusatkan ke koordinat (X: {targetX:F0}, Z: {targetZ:F0}).";
+        }
+    }
+
+    private void OnSyncPlayerLocationToMapClick(object sender, RoutedEventArgs e)
+    {
+        TxtMapTargetX.Text = ((int)_playerPosX).ToString();
+        TxtMapTargetZ.Text = ((int)_playerPosZ).ToString();
+        NativeSeedMap.CenterOn(_playerPosX, _playerPosZ, _playerDimId);
+        TxtStatus.Text = $"Peta dipusatkan ke posisi pemain (X: {_playerPosX:F0}, Z: {_playerPosZ:F0}).";
+    }
+
+    private void OnGoToSpawnPointClick(object sender, RoutedEventArgs e)
+    {
+        TxtMapTargetX.Text = "0";
+        TxtMapTargetZ.Text = "0";
+        NativeSeedMap.CenterOn(0, 0, 0);
+        TxtStatus.Text = "Peta dipusatkan ke titik Spawn (0, 0).";
+    }
+
+    private void OnTeleportPlayerToMapCoordsClick(object sender, RoutedEventArgs e)
+    {
+        if (double.TryParse(TxtMapTargetX.Text.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out double targetX) &&
+            double.TryParse(TxtMapTargetZ.Text.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out double targetZ))
+        {
+            ApplyPlayerTeleport(targetX, targetZ, NativeSeedMap.DimensionId);
+        }
+    }
+
+    private void OnNativeSeedMapTeleportRequested(object sender, UI.Controls.Map.TeleportEventArgs e)
+    {
+        ApplyPlayerTeleport(e.TargetX, e.TargetZ, e.DimensionId);
+    }
+
+    private void ApplyPlayerTeleport(double targetX, double targetZ, int targetDimId)
+    {
+        _playerPosX = targetX;
+        _playerPosZ = targetZ;
+        _playerDimId = targetDimId;
+
+        if (_worldSettings != null)
+        {
+            _worldSettings.PosX = targetX;
+            _worldSettings.PosZ = targetZ;
+            _worldSettings.Dimension = targetDimId;
+
+            // Sync Tab 4 inputs
+            TxtPlayerPosX.Text = targetX.ToString("0.##");
+            TxtPlayerPosZ.Text = targetZ.ToString("0.##");
+            CmbPlayerDim.SelectedIndex = Math.Clamp(targetDimId, 0, 2);
+        }
+
+        if (_currentFullPlayerNbt != null && _worldSettings != null)
+        {
+            BedrockWorldService.UpdatePlayerStats(_currentFullPlayerNbt, _worldSettings);
+        }
+
+        _hasUnsavedChanges = true;
+        NativeSeedMap.SetPlayerPosition(targetX, targetZ, targetDimId);
+
+        var dimStr = targetDimId switch
+        {
+            1 => "NETHER",
+            2 => "THE END",
+            _ => "OVERWORLD"
+        };
+
+        TxtStatus.Text = $"Posisi pemain diubah ke X: {targetX:F0}, Z: {targetZ:F0} ({dimStr}). Simpan ke LevelDB untuk menerapkan (*)";
+
+        MessageBox.Show(
+            $"Posisi pemain berhasil diatur ke titik baru:\n\n📍 X: {targetX:F0}\n📍 Z: {targetZ:F0}\n🌍 Dimensi: {dimStr}\n\nKlik tombol 'Simpan ke LevelDB' di toolbar atas untuk menyimpan perubahan ini ke save world.",
+            "Teleportasi Pemain Disetel",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information
+        );
+    }
+
+    private void OnReloadSeedMapClick(object sender, RoutedEventArgs e)
+    {
+        NativeSeedMap.RequestRender();
+        TxtStatus.Text = "Memuat ulang canvas peta seed...";
     }
 
     protected override void OnClosing(CancelEventArgs e)
