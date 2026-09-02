@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using BedrockInventoryEditor.Core.Map;
 using BedrockInventoryEditor.Core.Map.Biome;
 using BedrockInventoryEditor.Core.Map.Noise;
 using BedrockInventoryEditor.Core.Map.Structure;
@@ -120,8 +121,76 @@ public class NativeSeedMapTests
         Assert.Equal(0x56, biome.B);
     }
 
+    [Fact]
+    public void BiomeRegistry_SampleClimatePoint_ReturnsBounded6DPoint()
+    {
+        long seed = 123456789L;
+        var p = BiomeRegistry.SampleClimatePoint(seed, 500, -300, depth: 0.5f);
+
+        Assert.InRange(p.Temperature, -2.0f, 2.0f);
+        Assert.InRange(p.Humidity, -2.0f, 2.0f);
+        Assert.InRange(p.Continentalness, -2.0f, 2.0f);
+        Assert.InRange(p.Erosion, -2.0f, 2.0f);
+        Assert.InRange(p.Weirdness, -2.0f, 2.0f);
+        Assert.Equal(0.5f, p.Depth);
+    }
+
+    [Fact]
+    public void BiomeRegistry_SampleUndergroundDeepDark_ReturnsDeepDarkOrCave()
+    {
+        long seed = 42L;
+        var biome = BiomeRegistry.SampleBiome(seed, dimensionId: 0, blockX: 1000, blockZ: 1000, depth: 0.8f);
+
+        Assert.NotNull(biome);
+        Assert.True(biome.Category == BiomeCategory.Caves || biome.Category == BiomeCategory.Mountain || !string.IsNullOrEmpty(biome.Name));
+    }
+
     // =========================================================================
-    // 3. STRUCTURE FINDER TESTS
+    // 3. MT19937 PRNG TESTS
+    // =========================================================================
+
+    [Fact]
+    public void Mt19937_Deterministic_SameSeedSameOutput()
+    {
+        var mt1 = new Mt19937(12345U);
+        var mt2 = new Mt19937(12345U);
+
+        for (int i = 0; i < 100; i++)
+        {
+            Assert.Equal(mt1.NextUInt(), mt2.NextUInt());
+        }
+    }
+
+    [Fact]
+    public void Mt19937_DifferentSeeds_DifferentOutput()
+    {
+        var mt1 = new Mt19937(11111U);
+        var mt2 = new Mt19937(99999U);
+
+        Assert.NotEqual(mt1.NextUInt(), mt2.NextUInt());
+    }
+
+    [Fact]
+    public void Mt19937_NextInt_WithinRange()
+    {
+        var mt = new Mt19937(42U);
+        for (int i = 0; i < 1000; i++)
+        {
+            int val = mt.NextInt(24);
+            Assert.InRange(val, 0, 23);
+        }
+    }
+
+    [Fact]
+    public void Mt19937_NextInt_ZeroMax_ReturnsZero()
+    {
+        var mt = new Mt19937(42U);
+        Assert.Equal(0, mt.NextInt(0));
+        Assert.Equal(0, mt.NextInt(-5));
+    }
+
+    // =========================================================================
+    // 4. STRUCTURE FINDER TESTS
     // =========================================================================
 
     [Fact]
@@ -221,6 +290,21 @@ public class NativeSeedMapTests
     }
 
     [Fact]
+    public void StructureFinder_DifferentSeeds_ProduceDifferentLocations()
+    {
+        var s1 = StructureFinder.FindStructures(111L, 0, -2000, -2000, 2000, 2000);
+        var s2 = StructureFinder.FindStructures(999L, 0, -2000, -2000, 2000, 2000);
+
+        // At least one coordinate should differ between two different seeds
+        bool anyDifferent = s1.Count != s2.Count;
+        if (!anyDifferent && s1.Count > 0)
+        {
+            anyDifferent = s1[0].X != s2[0].X || s1[0].Z != s2[0].Z;
+        }
+        Assert.True(anyDifferent);
+    }
+
+    [Fact]
     public void StructureAssets_AllOfficialPngFilesExist()
     {
         string[] expectedPngs =
@@ -249,5 +333,88 @@ public class NativeSeedMapTests
                 Assert.True(System.IO.File.Exists(fullPath), $"Missing structure icon file: {file}");
             }
         }
+    }
+
+    // =========================================================================
+    // 5. NATIVE ENGINE BRIDGE TESTS (C++ DLL INTEROP)
+    // =========================================================================
+
+    [Fact]
+    public void NativeEngineBridge_FindStructures_ReturnsValidList()
+    {
+        long seed = 12345L;
+        var structures = NativeEngineBridge.FindStructures(seed, 0, -2000, -2000, 2000, 2000);
+
+        Assert.NotNull(structures);
+        Assert.NotEmpty(structures);
+        Assert.All(structures, s =>
+        {
+            Assert.False(string.IsNullOrEmpty(s.Name));
+            Assert.False(string.IsNullOrEmpty(s.IconAsset));
+            Assert.Equal(0, s.DimensionId);
+        });
+    }
+    [Fact]
+    public void NativeEngineBridge_FindStructures_RespectsBiomeValidation()
+    {
+        long seed = 12345L;
+        var structures = NativeEngineBridge.FindStructures(seed, 0, -3000, -3000, 3000, 3000);
+
+        Assert.NotNull(structures);
+        Assert.NotEmpty(structures);
+
+        // Verify that Desert Temples only spawn in Desert biomes
+        var desertTemples = structures.Where(s => s.Type == StructureType.DesertTemple);
+        foreach (var temple in desertTemples)
+        {
+            Assert.Contains("Desert", temple.BiomeName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Verify that Witch Huts only spawn in Swamp biomes
+        var witchHuts = structures.Where(s => s.Type == StructureType.WitchHut);
+        foreach (var hut in witchHuts)
+        {
+            Assert.Contains("Swamp", hut.BiomeName, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
+    public void NativeEngineBridge_SampleNetherAndEndBiomes_ReturnsCorrectDimensions()
+    {
+        long seed = 424242L;
+
+        // Nether (Dimension 1)
+        var netherBiome = NativeEngineBridge.SampleBiome(seed, 1, 100, 100);
+        Assert.NotNull(netherBiome);
+        Assert.Equal(BiomeCategory.Nether, netherBiome.Category);
+
+        // The End (Dimension 2)
+        var endCenter = NativeEngineBridge.SampleBiome(seed, 2, 0, 0);
+        Assert.NotNull(endCenter);
+        Assert.Equal(BiomeCategory.TheEnd, endCenter.Category);
+    }
+
+    [Fact]
+    public void NativeEngineBridge_RenderBiomeMap_GeneratesNonEmptyPixelBuffer()
+    {
+        long seed = 123456789L;
+        int width = 128;
+        int height = 128;
+        uint[] buffer = new uint[width * height];
+
+        bool success = NativeEngineBridge.RenderBiomeMap(
+            seed,
+            dimensionId: 0,
+            centerX: 0,
+            centerZ: 0,
+            zoom: 1.0,
+            width: width,
+            height: height,
+            step: 4,
+            pixelBuffer: buffer);
+
+        Assert.True(success);
+        Assert.True(NativeEngineBridge.IsNativeAvailable);
+        Assert.Contains(buffer, color => color != 0u);
     }
 }

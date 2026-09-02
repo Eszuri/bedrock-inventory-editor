@@ -106,6 +106,7 @@ public partial class BlockEntityContainer : ObservableObject
         return typeId switch
         {
             "Chest" => "Peti (Chest)",
+            "CopperChest" => isDouble ? "Peti Tembaga Ganda" : "Peti Tembaga (Copper Chest)",
             "ShulkerBox" => "Shulker Box",
             "Barrel" => "Tong (Barrel)",
             "Furnace" => "Tungku (Furnace)",
@@ -118,6 +119,8 @@ public partial class BlockEntityContainer : ObservableObject
             "Dropper" => "Dropper",
             "Hopper" => "Hopper",
             "ChiseledBookshelf" => "Chiseled Bookshelf",
+            "Shelf" or "WoodShelf" => "Rak Kayu (Shelf)",
+            "DecoratedPot" => "Pot Terdekorasi (Decorated Pot)",
             "Crafter" => "Crafter",
             "Lectern" => "Lectern",
             "Jukebox" => "Jukebox",
@@ -129,12 +132,12 @@ public partial class BlockEntityContainer : ObservableObject
     {
         return typeId switch
         {
-            "Chest" or "Barrel" => "Peti & Tong",
+            "Chest" or "CopperChest" or "Barrel" => "Peti & Tong",
             "ShulkerBox" => "Shulker Box",
             "Furnace" or "BlastFurnace" or "Smoker" or "Campfire" or "SoulCampfire" => "Pemasak & Tungku",
             "BrewingStand" => "Ramuan / Brewing",
             "Dispenser" or "Dropper" or "Hopper" or "Crafter" => "Redstone & Mekanik",
-            "ChiseledBookshelf" or "Lectern" or "Jukebox" => "Dekorasi & Buku",
+            "ChiseledBookshelf" or "Shelf" or "WoodShelf" or "DecoratedPot" or "Lectern" or "Jukebox" => "Dekorasi & Buku",
             _ => "Lainnya"
         };
     }
@@ -144,6 +147,7 @@ public partial class BlockEntityContainer : ObservableObject
         return typeId switch
         {
             "Chest" => "minecraft:chest",
+            "CopperChest" => "minecraft:copper_chest",
             "ShulkerBox" => "minecraft:shulker_box",
             "Barrel" => "minecraft:barrel",
             "Furnace" => "minecraft:furnace",
@@ -156,6 +160,8 @@ public partial class BlockEntityContainer : ObservableObject
             "Dropper" => "minecraft:dropper",
             "Hopper" => "minecraft:hopper",
             "ChiseledBookshelf" => "minecraft:chiseled_bookshelf",
+            "Shelf" or "WoodShelf" => "minecraft:oak_shelf",
+            "DecoratedPot" => "minecraft:decorated_pot",
             "Crafter" => "minecraft:crafter",
             "Lectern" => "minecraft:lectern",
             "Jukebox" => "minecraft:jukebox",
@@ -169,13 +175,13 @@ public partial class BlockEntityContainer : ObservableObject
 
         return typeId switch
         {
-            "Chest" or "Barrel" or "ShulkerBox" => (27, 3, 9),
+            "Chest" or "CopperChest" or "Barrel" or "ShulkerBox" => (27, 3, 9),
             "Dispenser" or "Dropper" or "Crafter" => (9, 3, 3),
-            "ChiseledBookshelf" => (6, 2, 3),
+            "ChiseledBookshelf" or "Shelf" or "WoodShelf" => (6, 2, 3),
             "Hopper" or "BrewingStand" => (5, 1, 5),
             "Campfire" or "SoulCampfire" => (4, 2, 2),
             "Furnace" or "BlastFurnace" or "Smoker" => (3, 1, 3),
-            "Lectern" or "Jukebox" => (1, 1, 1),
+            "Lectern" or "Jukebox" or "DecoratedPot" => (1, 1, 1),
             _ => (0, 0, 0)
         };
     }

@@ -433,11 +433,11 @@ public static class BedrockWorldService
             {
                 if (mergedSecondarySet.Contains(c)) continue;
 
-                if (c.TypeId == "Chest" && c.PairX.HasValue && c.PairZ.HasValue && c.PairLead == 1)
+                if ((c.TypeId == "Chest" || c.TypeId == "CopperChest") && c.PairX.HasValue && c.PairZ.HasValue && c.PairLead == 1)
                 {
                     // Look for partner chest
                     var partner = rawContainers.FirstOrDefault(p => 
-                        p.TypeId == "Chest" && 
+                        p.TypeId == c.TypeId && 
                         p.X == c.PairX.Value && 
                         p.Z == c.PairZ.Value && 
                         p.Y == c.Y && 
@@ -603,6 +603,13 @@ public static class BedrockWorldService
         if (container.TypeId == "Jukebox" && comp.GetCompound("RecordItem") is NbtCompound recordComp)
         {
             var loaded = ItemStack.FromNbt(recordComp, SlotLocation.Container, 0);
+            ItemStack.CopyProperties(loaded, container.Slots[0]);
+        }
+
+        // 5. DecoratedPot stores item (1.20.30+)
+        if (container.TypeId == "DecoratedPot" && comp.GetCompound("item") is NbtCompound potItemComp && potItemComp.Count > 0)
+        {
+            var loaded = ItemStack.FromNbt(potItemComp, SlotLocation.Container, 0);
             ItemStack.CopyProperties(loaded, container.Slots[0]);
         }
     }
@@ -810,6 +817,19 @@ public static class BedrockWorldService
             else
             {
                 targetNbt.Remove("RecordItem");
+            }
+        }
+
+        // DecoratedPot
+        if (!isSecondary && container.TypeId == "DecoratedPot")
+        {
+            if (container.Slots.Count > 0 && !container.Slots[0].IsEmpty)
+            {
+                targetNbt.Set(container.Slots[0].ToNbt("item"));
+            }
+            else
+            {
+                targetNbt.Remove("item");
             }
         }
     }

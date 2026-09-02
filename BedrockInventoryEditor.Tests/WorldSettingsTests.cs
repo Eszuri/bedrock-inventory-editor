@@ -76,6 +76,9 @@ public class WorldSettingsTests
             Assert.False(loadedModel.KeepInventory);
             Assert.True(loadedModel.CheatsEnabled);
             Assert.True(loadedModel.HasBeenLoadedInCreative);
+            Assert.True(loadedModel.ProjectilesCanBreakBlocks);
+            Assert.False(loadedModel.RecipesUnlock);
+            Assert.True(loadedModel.DoFireTick);
 
             // 3. Modify settings
             loadedModel.WorldName = "Super Survival World";
@@ -84,6 +87,14 @@ public class WorldSettingsTests
             loadedModel.CheatsEnabled = false;
             loadedModel.CommandsEnabled = false;
             loadedModel.HasBeenLoadedInCreative = false; // Restore Xbox Achievements
+            loadedModel.ProjectilesCanBreakBlocks = false;
+            loadedModel.RecipesUnlock = true;
+            loadedModel.DoFireTick = false;
+            loadedModel.CommandBlockOutput = false;
+            loadedModel.SendCommandFeedback = false;
+            loadedModel.ShowDeathMessages = false;
+            loadedModel.ShowTags = false;
+            loadedModel.ShowBorderEffect = false;
             loadedModel.DayCount = 100;
             loadedModel.TimeOfDay = 6000; // 12:00
             loadedModel.WeatherType = 0; // Clear
@@ -106,6 +117,14 @@ public class WorldSettingsTests
             Assert.False(reloadedModel.FallDamage);
             Assert.False(reloadedModel.CheatsEnabled);
             Assert.False(reloadedModel.HasBeenLoadedInCreative);
+            Assert.False(reloadedModel.ProjectilesCanBreakBlocks);
+            Assert.True(reloadedModel.RecipesUnlock);
+            Assert.False(reloadedModel.DoFireTick);
+            Assert.False(reloadedModel.CommandBlockOutput);
+            Assert.False(reloadedModel.SendCommandFeedback);
+            Assert.False(reloadedModel.ShowDeathMessages);
+            Assert.False(reloadedModel.ShowTags);
+            Assert.False(reloadedModel.ShowBorderEffect);
             Assert.Equal(100, reloadedModel.DayCount);
             Assert.Equal(6000, reloadedModel.TimeOfDay);
 

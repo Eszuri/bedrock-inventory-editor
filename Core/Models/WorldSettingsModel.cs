@@ -32,6 +32,15 @@ public partial class WorldSettingsModel : ObservableObject
     [ObservableProperty]
     private string _baseGameVersion = "*";
 
+    [ObservableProperty]
+    private int _spawnX;
+
+    [ObservableProperty]
+    private int _spawnY = 64;
+
+    [ObservableProperty]
+    private int _spawnZ;
+
     // ==========================================
     // ⏰ Time & Weather
     // ==========================================
@@ -153,6 +162,33 @@ public partial class WorldSettingsModel : ObservableObject
 
     [ObservableProperty]
     private bool _showDaysPlayed = true;
+
+    [ObservableProperty]
+    private bool _projectilesCanBreakBlocks = true;
+
+    [ObservableProperty]
+    private bool _recipesUnlock;
+
+    [ObservableProperty]
+    private bool _showRecipeMessages = true;
+
+    [ObservableProperty]
+    private bool _showTags = true;
+
+    [ObservableProperty]
+    private bool _showBorderEffect = true;
+
+    [ObservableProperty]
+    private bool _doFireTick = true;
+
+    [ObservableProperty]
+    private bool _commandBlockOutput = true;
+
+    [ObservableProperty]
+    private bool _sendCommandFeedback = true;
+
+    [ObservableProperty]
+    private bool _showDeathMessages = true;
 
     [ObservableProperty]
     private int _randomTickSpeed = 1;

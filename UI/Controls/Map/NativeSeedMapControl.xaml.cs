@@ -86,31 +86,21 @@ public partial class NativeSeedMapControl : UserControl
     private readonly List<StructureFilterItem> _structureFilters =
     [
         new(StructureType.Village, "Village", "village.png", 0),
-        new(StructureType.AncientCity, "Ancient City", "ancient_city.png", 0),
-        new(StructureType.Dungeon, "Dungeon", "dungeon.png", 0),
-        new(StructureType.Stronghold, "Stronghold", "stronghold.png", 0),
-        new(StructureType.Mansion, "Mansion", "mansion.png", 0),
-        new(StructureType.Monument, "Monument", "monument.png", 0),
-        new(StructureType.Outpost, "Outpost", "outpost.png", 0),
-        new(StructureType.Mineshaft, "Mineshaft", "mineshaft.png", 0),
-        new(StructureType.RuinedPortal, "Ruined Portal", "ruined_portal.png", -1),
-        new(StructureType.JungleTemple, "Jungle Temple", "jungle_temple.png", 0),
         new(StructureType.DesertTemple, "Desert Temple", "desert_temple.png", 0),
+        new(StructureType.JungleTemple, "Jungle Temple", "jungle_temple.png", 0),
         new(StructureType.WitchHut, "Witch Hut", "witch_hut.png", 0),
-        new(StructureType.Treasure, "Treasure", "treasure.png", 0),
-        new(StructureType.Shipwreck, "Shipwreck", "shipwreck.png", 0),
         new(StructureType.Igloo, "Igloo", "igloo.png", 0),
-        new(StructureType.OceanRuins, "Ocean Ruins", "ocean_ruins.png", 0),
-        new(StructureType.Fossil, "Fossil", "fossil.png", 0),
-        new(StructureType.Cave, "Cave", "cave.png", 0),
-        new(StructureType.Ravine, "Ravine", "ravine.png", 0),
-        new(StructureType.LavaPool, "Lava Pool", "lava_pool.png", 0),
-        new(StructureType.Geode, "Geode", "geode.png", 0),
-        new(StructureType.Apple, "Apple", "apple.png", 0),
-        new(StructureType.OreVeins, "Ore Veins", "ore_veins.png", 0),
-        new(StructureType.DesertWell, "Desert Well", "desert_well.png", 0),
-        new(StructureType.TrailRuins, "Trail Ruins", "trail_ruins.png", 0),
+        new(StructureType.Outpost, "Outpost", "outpost.png", 0),
+        new(StructureType.Monument, "Monument", "monument.png", 0),
+        new(StructureType.Mansion, "Mansion", "mansion.png", 0),
+        new(StructureType.Stronghold, "Stronghold", "stronghold.png", 0),
+        new(StructureType.AncientCity, "Ancient City", "ancient_city.png", 0),
         new(StructureType.TrialChamber, "Trial Chamber", "trial_chamber.png", 0),
+        new(StructureType.TrailRuins, "Trail Ruins", "trail_ruins.png", 0),
+        new(StructureType.Shipwreck, "Shipwreck", "shipwreck.png", 0),
+        new(StructureType.OceanRuins, "Ocean Ruins", "ocean_ruins.png", 0),
+        new(StructureType.Treasure, "Treasure", "treasure.png", 0),
+        new(StructureType.RuinedPortal, "Ruined Portal", "ruined_portal.png", -1),
         new(StructureType.NetherFortress, "Nether Fortress", "nether_fortress.png", 1),
         new(StructureType.BastionRemnant, "Bastion", "bastion.png", 1),
         new(StructureType.EndCity, "End City", "end_city.png", 2)
@@ -276,56 +266,66 @@ public partial class NativeSeedMapControl : UserControl
         bool showSlime = ChkLayerSlime?.IsChecked == true && dim == 0;
         var enabledStructures = GetEnabledStructureTypes();
 
-        // Ultra-light step: 6 during mouse drag (takes <0.2ms), 2-3 when resting (takes ~1ms)
-        int step = isPanning ? 6 : (zoom < 0.35 ? 3 : 2);
+        // Ultra-fast rendering: step 4 during mouse drag (smooth 60 FPS panning), step 1 when resting (100% pixel-perfect block & river precision)
+        int step = isPanning ? 4 : (zoom < 0.2 ? 2 : 1);
 
         Task.Run(() =>
         {
             double halfW = width / 2.0;
             double halfH = height / 2.0;
 
-            Parallel.For(0, (height + step - 1) / step, pyStep =>
+            bool renderedNatively = false;
+            if (showBiomes)
             {
-                int py = pyStep * step;
-                double bz = cz + (py - halfH) / zoom;
-                int chunkZ = (int)Math.Floor(bz / 16.0);
-                int subZ = (int)Math.Floor(bz) & 15;
+                renderedNatively = NativeEngineBridge.RenderBiomeMap(seed, dim, cx, cz, zoom, width, height, step, _sharedPixelBuffer);
+            }
 
-                for (int px = 0; px < width; px += step)
+            if (!renderedNatively || showSlime || showGrid || !showBiomes)
+            {
+                Parallel.For(0, (height + step - 1) / step, pyStep =>
                 {
-                    double bx = cx + (px - halfW) / zoom;
-                    int chunkX = (int)Math.Floor(bx / 16.0);
-                    int subX = (int)Math.Floor(bx) & 15;
+                    int py = pyStep * step;
+                    double bz = cz + (py - halfH) / zoom;
+                    int chunkZ = (int)Math.Floor(bz / 16.0);
+                    int subZ = (int)Math.Floor(bz) & 15;
 
-                    uint color = 0xFF0A0E18;
-
-                    if (showBiomes)
+                    for (int px = 0; px < width; px += step)
                     {
-                        var biome = BiomeRegistry.SampleBiome(seed, dim, bx, bz);
-                        color = biome.ColorArgb;
-                    }
+                        double bx = cx + (px - halfW) / zoom;
+                        int chunkX = (int)Math.Floor(bx / 16.0);
+                        int subX = (int)Math.Floor(bx) & 15;
 
-                    if (showSlime && ChunkbaseService.IsBedrockSlimeChunk(chunkX, chunkZ))
-                    {
-                        color = BlendColor(color, 0xFF10B981, showBiomes ? (byte)70 : (byte)150);
-                    }
+                        int baseIdx = py * width + px;
+                        uint color = (renderedNatively && showBiomes) ? _sharedPixelBuffer[baseIdx] : 0xFF0A0E18;
 
-                    if (showGrid && (subX == 0 || subZ == 0))
-                    {
-                        color = BlendColor(color, showBiomes ? 0xFF000000 : 0xFF38BDF8, (byte)80);
-                    }
-
-                    // Direct buffer block write
-                    for (int dy = 0; dy < step && (py + dy) < height; dy++)
-                    {
-                        int rowIdx = (py + dy) * width;
-                        for (int dx = 0; dx < step && (px + dx) < width; dx++)
+                        if (!renderedNatively && showBiomes)
                         {
-                            _sharedPixelBuffer[rowIdx + px + dx] = color;
+                            var biome = NativeEngineBridge.SampleBiome(seed, dim, bx, bz);
+                            color = biome.ColorArgb;
+                        }
+
+                        if (showSlime && NativeEngineBridge.IsSlimeChunk(chunkX, chunkZ))
+                        {
+                            color = BlendColor(color, 0xFF10B981, showBiomes ? (byte)70 : (byte)150);
+                        }
+
+                        if (showGrid && (subX == 0 || subZ == 0))
+                        {
+                            color = BlendColor(color, showBiomes ? 0xFF000000 : 0xFF38BDF8, (byte)80);
+                        }
+
+                        // Direct buffer block write
+                        for (int dy = 0; dy < step && (py + dy) < height; dy++)
+                        {
+                            int rowIdx = (py + dy) * width;
+                            for (int dx = 0; dx < step && (px + dx) < width; dx++)
+                            {
+                                _sharedPixelBuffer[rowIdx + px + dx] = color;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             // Fast structure scan only when not dragging
             List<StructureDefinition> structures = _visibleStructures;
@@ -335,7 +335,7 @@ public partial class NativeSeedMapControl : UserControl
                 double maxBx = cx + halfW / zoom;
                 double minBz = cz - halfH / zoom;
                 double maxBz = cz + halfH / zoom;
-                structures = StructureFinder.FindStructures(seed, dim, minBx, minBz, maxBx, maxBz, enabledStructures);
+                structures = NativeEngineBridge.FindStructures(seed, dim, minBx, minBz, maxBx, maxBz, enabledStructures);
             }
 
             Dispatcher.BeginInvoke(DispatcherPriority.Render, () =>
@@ -385,7 +385,7 @@ public partial class NativeSeedMapControl : UserControl
         // 1. STRUCTURE PINS WITH OFFICIAL ICONS (Capped to top 40 visible pins for high performance)
         if (_visibleStructures.Count > 0)
         {
-            var visiblePins = _visibleStructures.Take(40);
+            var visiblePins = _visibleStructures.Take(150);
 
             foreach (var s in visiblePins)
             {
@@ -715,7 +715,7 @@ public partial class NativeSeedMapControl : UserControl
         var (cx, cz, subX, subZ) = ChunkbaseService.BlockToChunkCoords(_spawnX, _spawnZ);
         TxtDetailChunk.Text = $"Chunk [{cx}, {cz}] ({subX}, {subZ})";
 
-        var biome = BiomeRegistry.SampleBiome(_worldSeed, 0, _spawnX, _spawnZ);
+        var biome = NativeEngineBridge.SampleBiome(_worldSeed, 0, _spawnX, _spawnZ);
         TxtDetailBiome.Text = biome.Name;
 
         double dist = ChunkbaseService.CalculateDistance(_playerX, _playerZ, _spawnX, _spawnZ);
@@ -747,7 +747,7 @@ public partial class NativeSeedMapControl : UserControl
         var (cx, cz, subX, subZ) = ChunkbaseService.BlockToChunkCoords(_playerX, _playerZ);
         TxtDetailChunk.Text = $"Chunk [{cx}, {cz}] ({subX}, {subZ})";
 
-        var biome = BiomeRegistry.SampleBiome(_worldSeed, _playerDimensionId, _playerX, _playerZ);
+        var biome = NativeEngineBridge.SampleBiome(_worldSeed, _playerDimensionId, _playerX, _playerZ);
         TxtDetailBiome.Text = biome.Name;
         TxtDetailDistance.Text = "Tepat di Posisi Pemain";
 
@@ -768,7 +768,7 @@ public partial class NativeSeedMapControl : UserControl
         _selectedZ = bz;
         _selectedDimensionId = _dimensionId;
 
-        var biome = BiomeRegistry.SampleBiome(_worldSeed, _dimensionId, bx, bz);
+        var biome = NativeEngineBridge.SampleBiome(_worldSeed, _dimensionId, bx, bz);
         _selectedTitle = biome.Name;
 
         TxtDetailTitle.Text = $"{GetBiomeEmoji(biome)} {biome.Name}";
@@ -776,7 +776,7 @@ public partial class NativeSeedMapControl : UserControl
         TxtDetailCoords.Text = $"X: {Math.Round(bx):N0}, Z: {Math.Round(bz):N0}";
 
         var (cx, cz, subX, subZ) = ChunkbaseService.BlockToChunkCoords(bx, bz);
-        bool isSlime = _dimensionId == 0 && ChunkbaseService.IsBedrockSlimeChunk(cx, cz);
+        bool isSlime = _dimensionId == 0 && NativeEngineBridge.IsSlimeChunk(cx, cz);
         TxtDetailChunk.Text = $"Chunk [{cx}, {cz}] ({subX}, {subZ})" + (isSlime ? " 🟢 Slime" : "");
         TxtDetailBiome.Text = $"{biome.Category} • {biome.Id}";
 
@@ -928,14 +928,14 @@ public partial class NativeSeedMapControl : UserControl
         int intZ = (int)Math.Round(bz);
 
         // Biome
-        var biome = BiomeRegistry.SampleBiome(_worldSeed, _dimensionId, bx, bz);
+        var biome = NativeEngineBridge.SampleBiome(_worldSeed, _dimensionId, bx, bz);
         TxtHudBiome.Text = $"{GetBiomeEmoji(biome)} {biome.Name}";
 
         // Chunk & Slime
         var (cx, cz, subX, subZ) = ChunkbaseService.BlockToChunkCoords(bx, bz);
         TxtHudCoords.Text = $"📍 X: {intX:N0}, Z: {intZ:N0} • Chunk: [{cx}, {cz}] ({subX}, {subZ})";
 
-        bool isSlime = _dimensionId == 0 && ChunkbaseService.IsBedrockSlimeChunk(cx, cz);
+        bool isSlime = _dimensionId == 0 && NativeEngineBridge.IsSlimeChunk(cx, cz);
         BadgeSlimeIndicator.Visibility = isSlime ? Visibility.Visible : Visibility.Collapsed;
 
         // Distance & Bearing from player

@@ -53,6 +53,9 @@ public static class BedrockLevelDatService
             model.StorageVersion = rootNbt.GetInt("StorageVersion", 10);
             model.InventoryVersion = rootNbt.GetString("InventoryVersion", "1.26.21");
             model.BaseGameVersion = rootNbt.GetString("baseGameVersion", "*");
+            model.SpawnX = rootNbt.GetInt("SpawnX", 0);
+            model.SpawnY = rootNbt.GetInt("SpawnY", 64);
+            model.SpawnZ = rootNbt.GetInt("SpawnZ", 0);
 
             // ⏰ Time & Weather
             model.TotalTime = rootNbt.GetLong("Time", 0);
@@ -87,6 +90,15 @@ public static class BedrockLevelDatService
             model.TntExplodes = rootNbt.GetByte("tntexplodes", 1) == 1;
             model.RespawnBlocksExplode = rootNbt.GetByte("respawnblocksexplode", 1) == 1;
             model.ShowDaysPlayed = rootNbt.GetByte("showdaysplayed", 1) == 1;
+            model.ProjectilesCanBreakBlocks = rootNbt.GetByte("projectilescanbreakblocks", 1) == 1;
+            model.RecipesUnlock = rootNbt.GetByte("recipesunlock", 0) == 1;
+            model.ShowRecipeMessages = rootNbt.GetByte("showrecipemessages", 1) == 1;
+            model.ShowTags = rootNbt.GetByte("showtags", 1) == 1;
+            model.ShowBorderEffect = rootNbt.GetByte("showbordereffect", 1) == 1;
+            model.DoFireTick = rootNbt.GetByte("dofiretick", 1) == 1;
+            model.CommandBlockOutput = rootNbt.GetByte("commandblockoutput", 1) == 1;
+            model.SendCommandFeedback = rootNbt.GetByte("sendcommandfeedback", 1) == 1;
+            model.ShowDeathMessages = rootNbt.GetByte("showdeathmessages", 1) == 1;
             model.RandomTickSpeed = rootNbt.GetInt("randomtickspeed", 1);
             model.PlayersSleepingPercentage = rootNbt.GetInt("playerssleepingpercentage", 100);
             model.SpawnRadius = rootNbt.GetInt("spawnradius", 10);
@@ -130,6 +142,9 @@ public static class BedrockLevelDatService
             root.SetInt("StorageVersion", model.StorageVersion);
             if (!string.IsNullOrEmpty(model.InventoryVersion)) root.SetString("InventoryVersion", model.InventoryVersion);
             if (!string.IsNullOrEmpty(model.BaseGameVersion)) root.SetString("baseGameVersion", model.BaseGameVersion);
+            root.SetInt("SpawnX", model.SpawnX);
+            root.SetInt("SpawnY", model.SpawnY);
+            root.SetInt("SpawnZ", model.SpawnZ);
 
             // ⏰ Time & Weather
             root.SetLong("Time", model.TotalTime);
@@ -172,6 +187,15 @@ public static class BedrockLevelDatService
             root.SetByte("tntexplodes", (byte)(model.TntExplodes ? 1 : 0));
             root.SetByte("respawnblocksexplode", (byte)(model.RespawnBlocksExplode ? 1 : 0));
             root.SetByte("showdaysplayed", (byte)(model.ShowDaysPlayed ? 1 : 0));
+            root.SetByte("projectilescanbreakblocks", (byte)(model.ProjectilesCanBreakBlocks ? 1 : 0));
+            root.SetByte("recipesunlock", (byte)(model.RecipesUnlock ? 1 : 0));
+            root.SetByte("showrecipemessages", (byte)(model.ShowRecipeMessages ? 1 : 0));
+            root.SetByte("showtags", (byte)(model.ShowTags ? 1 : 0));
+            root.SetByte("showbordereffect", (byte)(model.ShowBorderEffect ? 1 : 0));
+            root.SetByte("dofiretick", (byte)(model.DoFireTick ? 1 : 0));
+            root.SetByte("commandblockoutput", (byte)(model.CommandBlockOutput ? 1 : 0));
+            root.SetByte("sendcommandfeedback", (byte)(model.SendCommandFeedback ? 1 : 0));
+            root.SetByte("showdeathmessages", (byte)(model.ShowDeathMessages ? 1 : 0));
             root.SetInt("randomtickspeed", model.RandomTickSpeed);
             root.SetInt("playerssleepingpercentage", model.PlayersSleepingPercentage);
             root.SetInt("spawnradius", model.SpawnRadius);

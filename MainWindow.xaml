@@ -980,8 +980,11 @@
                                                         <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkDrowningDamage" Content="Drowning (Tenggelam dalam air)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
-                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4">
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkFreezeDamage" Content="Freeze (Membeku di salju bubuk)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
+                                                        </Border>
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4">
+                                                            <CheckBox x:Name="ChkDoFireTick" Content="🔥 Do Fire Tick (Penyebaran &amp; Pemadaman Api)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
                                                     </StackPanel>
                                                 </Border>
@@ -1005,6 +1008,21 @@
                                                         </Border>
                                                         <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
                                                             <CheckBox x:Name="ChkShowDaysPlayed" Content="📅 Tampilkan Hari Dimainkan di Layar" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
+                                                        </Border>
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                            <CheckBox x:Name="ChkProjectilesCanBreakBlocks" Content="🏹 Proyektil Memecahkan Blok (Pot, Dripstone)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
+                                                        </Border>
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                            <CheckBox x:Name="ChkRecipesUnlock" Content="📖 Recipes Unlock (Buka Resep Bertahap)" Foreground="#CBD5E1" FontSize="11"/>
+                                                        </Border>
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                            <CheckBox x:Name="ChkShowRecipeMessages" Content="💬 Tampilkan Pesan Buka Resep" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
+                                                        </Border>
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                            <CheckBox x:Name="ChkShowTags" Content="🏷️ Tampilkan Tag NBT Item (showtags)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
+                                                        </Border>
+                                                        <Border Background="#101626" CornerRadius="5" Padding="8,4" Margin="0,0,0,4">
+                                                            <CheckBox x:Name="ChkShowBorderEffect" Content="🧱 Tampilkan Efek Border Blok" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
                                                         </Border>
                                                         <Border Background="#101626" CornerRadius="5" Padding="8,4">
                                                             <CheckBox x:Name="ChkTntExplodes" Content="💣 TNT Meledak (TNT Explodes)" Foreground="#CBD5E1" FontSize="11" IsChecked="True"/>
@@ -1032,7 +1050,7 @@
                                                 <!-- Sub-Group 5: Cheats & Commands -->
                                                 <Border Height="1" Background="#1C2438" Margin="0,2,0,8"/>
                                                 <TextBlock Text="KONTROL CHEAT &amp; PERINTAH:" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,6"/>
-                                                <Grid>
+                                                <Grid Margin="0,0,0,4">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="8"/>
@@ -1045,6 +1063,22 @@
                                                         <CheckBox x:Name="ChkCommandsEnabled" Content="⌨️ Commands Enabled" Foreground="#CBD5E1" FontSize="10" FontWeight="SemiBold"/>
                                                     </Border>
                                                 </Grid>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="8"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" Background="#141C2E" CornerRadius="5" Padding="8,4">
+                                                        <CheckBox x:Name="ChkCommandBlockOutput" Content="📟 Command Block Output" Foreground="#CBD5E1" FontSize="10" IsChecked="True"/>
+                                                    </Border>
+                                                    <Border Grid.Column="2" Background="#141C2E" CornerRadius="5" Padding="8,4">
+                                                        <CheckBox x:Name="ChkSendCommandFeedback" Content="↩️ Send Command Feedback" Foreground="#CBD5E1" FontSize="10" IsChecked="True"/>
+                                                    </Border>
+                                                </Grid>
+                                                <Border Background="#141C2E" CornerRadius="5" Padding="8,4" Margin="0,4,0,0">
+                                                    <CheckBox x:Name="ChkShowDeathMessages" Content="☠️ Tampilkan Pesan Kematian di Layar" Foreground="#CBD5E1" FontSize="10" IsChecked="True"/>
+                                                </Border>
                                             </StackPanel>
                                         </ui:Card>
                                     </StackPanel>
@@ -1053,12 +1087,12 @@
                         </ScrollViewer>
                     </TabItem>
 
-                    <!-- TAB 5: PETA SEED & STRUKTUR (NATIVE CANVAS SEED MAP) -->
+                    <!-- TAB 5: PETA SEED & CHUNK VIEWER (NATIVE CANVAS) -->
                     <TabItem>
                         <TabItem.Header>
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="Map24" FontSize="18" Foreground="#38BDF8" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Peta Seed (Native Canvas)" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="Chunk &amp; Seed Map" FontSize="12" VerticalAlignment="Center"/>
                             </StackPanel>
                         </TabItem.Header>
 
@@ -1109,7 +1143,7 @@
                                         <!-- Right Quick Action Buttons -->
                                         <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
                                             <ui:Button x:Name="BtnMapSyncPlayer" Icon="{ui:SymbolIcon Location24}" Content="📍 Lokasi Pemain" Padding="10,5" Margin="0,0,6,0" Appearance="Secondary" FontWeight="SemiBold" FontSize="11" Click="OnSyncPlayerLocationToMapClick" ToolTip="Pusatkan peta ke koordinat pemain saat ini"/>
-                                            <ui:Button x:Name="BtnMapSpawnPoint" Icon="{ui:SymbolIcon Home24}" Content="🏠 Spawn" Padding="10,5" Margin="0,0,6,0" Appearance="Secondary" FontSize="11" Click="OnGoToSpawnPointClick" ToolTip="Pusatkan peta ke titik spawn utama (0, 0)"/>
+                                            <ui:Button x:Name="BtnMapSpawnPoint" Icon="{ui:SymbolIcon Home24}" Content="🏠 Spawn" Padding="10,5" Margin="0,0,6,0" Appearance="Secondary" FontSize="11" Click="OnGoToSpawnPointClick" ToolTip="Pusatkan peta ke titik spawn utama"/>
                                             <ui:Button x:Name="BtnMapTeleportPlayer" Icon="{ui:SymbolIcon Flash24}" Content="⚡ Teleport Pemain" Padding="12,5" Margin="0,0,6,0" Appearance="Secondary" Foreground="#F59E0B" FontWeight="Bold" FontSize="11" Click="OnTeleportPlayerToMapCoordsClick" ToolTip="Ubah koordinat pemain ke titik koordinat target di atas"/>
                                             <ui:Button x:Name="BtnMapReload" Icon="{ui:SymbolIcon ArrowClockwise24}" Content="Refresh" Padding="10,5" Appearance="Secondary" FontSize="11" Click="OnReloadSeedMapClick" ToolTip="Render ulang canvas peta"/>
                                         </StackPanel>

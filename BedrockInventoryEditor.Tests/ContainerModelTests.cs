@@ -23,6 +23,11 @@ public class ContainerModelTests
     [InlineData("Smoker", false, 3, 1, 3)]
     [InlineData("Lectern", false, 1, 1, 1)]
     [InlineData("Jukebox", false, 1, 1, 1)]
+    [InlineData("CopperChest", false, 27, 3, 9)]
+    [InlineData("CopperChest", true, 54, 6, 9)]
+    [InlineData("DecoratedPot", false, 1, 1, 1)]
+    [InlineData("Shelf", false, 6, 2, 3)]
+    [InlineData("WoodShelf", false, 6, 2, 3)]
     public void ContainerDimensions_AreCorrect(string typeId, bool isDouble, int expectedSlots, int expectedRows, int expectedCols)
     {
         var (slots, rows, cols) = BlockEntityContainer.GetContainerDimensions(typeId, isDouble);

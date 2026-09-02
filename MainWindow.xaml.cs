@@ -704,6 +704,7 @@ public partial class MainWindow : Window
         ChkFireDamage.IsChecked = _worldSettings.FireDamage;
         ChkDrowningDamage.IsChecked = _worldSettings.DrowningDamage;
         ChkFreezeDamage.IsChecked = _worldSettings.FreezeDamage;
+        ChkDoFireTick.IsChecked = _worldSettings.DoFireTick;
         ChkKeepInventory.IsChecked = _worldSettings.KeepInventory;
         ChkMobGriefing.IsChecked = _worldSettings.MobGriefing;
         ChkMobSpawning.IsChecked = _worldSettings.DoMobSpawning;
@@ -716,12 +717,20 @@ public partial class MainWindow : Window
         ChkImmediateRespawn.IsChecked = _worldSettings.DoImmediateRespawn;
         ChkTntExplodes.IsChecked = _worldSettings.TntExplodes;
         ChkShowDaysPlayed.IsChecked = _worldSettings.ShowDaysPlayed;
+        ChkProjectilesCanBreakBlocks.IsChecked = _worldSettings.ProjectilesCanBreakBlocks;
+        ChkRecipesUnlock.IsChecked = _worldSettings.RecipesUnlock;
+        ChkShowRecipeMessages.IsChecked = _worldSettings.ShowRecipeMessages;
+        ChkShowTags.IsChecked = _worldSettings.ShowTags;
+        ChkShowBorderEffect.IsChecked = _worldSettings.ShowBorderEffect;
         TxtRandomTickSpeed.Text = _worldSettings.RandomTickSpeed.ToString();
         TxtSleepingPercent.Text = _worldSettings.PlayersSleepingPercentage.ToString();
 
-        // Cheats & Achievements
+        // Cheats & Commands
         ChkCheatsEnabled.IsChecked = _worldSettings.CheatsEnabled;
         ChkCommandsEnabled.IsChecked = _worldSettings.CommandsEnabled;
+        ChkCommandBlockOutput.IsChecked = _worldSettings.CommandBlockOutput;
+        ChkSendCommandFeedback.IsChecked = _worldSettings.SendCommandFeedback;
+        ChkShowDeathMessages.IsChecked = _worldSettings.ShowDeathMessages;
         UpdateAchievementBadge();
 
         // Populate Seed Map Tab (Tab 5)
@@ -927,6 +936,7 @@ public partial class MainWindow : Window
         _worldSettings.FireDamage = ChkFireDamage.IsChecked == true;
         _worldSettings.DrowningDamage = ChkDrowningDamage.IsChecked == true;
         _worldSettings.FreezeDamage = ChkFreezeDamage.IsChecked == true;
+        _worldSettings.DoFireTick = ChkDoFireTick.IsChecked == true;
         _worldSettings.KeepInventory = ChkKeepInventory.IsChecked == true;
         _worldSettings.MobGriefing = ChkMobGriefing.IsChecked == true;
         _worldSettings.DoMobSpawning = ChkMobSpawning.IsChecked == true;
@@ -939,11 +949,19 @@ public partial class MainWindow : Window
         _worldSettings.DoImmediateRespawn = ChkImmediateRespawn.IsChecked == true;
         _worldSettings.TntExplodes = ChkTntExplodes.IsChecked == true;
         _worldSettings.ShowDaysPlayed = ChkShowDaysPlayed.IsChecked == true;
+        _worldSettings.ProjectilesCanBreakBlocks = ChkProjectilesCanBreakBlocks.IsChecked == true;
+        _worldSettings.RecipesUnlock = ChkRecipesUnlock.IsChecked == true;
+        _worldSettings.ShowRecipeMessages = ChkShowRecipeMessages.IsChecked == true;
+        _worldSettings.ShowTags = ChkShowTags.IsChecked == true;
+        _worldSettings.ShowBorderEffect = ChkShowBorderEffect.IsChecked == true;
         if (int.TryParse(TxtRandomTickSpeed.Text, out var rts)) _worldSettings.RandomTickSpeed = rts;
         if (int.TryParse(TxtSleepingPercent.Text, out var sp)) _worldSettings.PlayersSleepingPercentage = sp;
 
         _worldSettings.CheatsEnabled = ChkCheatsEnabled.IsChecked == true;
         _worldSettings.CommandsEnabled = ChkCommandsEnabled.IsChecked == true;
+        _worldSettings.CommandBlockOutput = ChkCommandBlockOutput.IsChecked == true;
+        _worldSettings.SendCommandFeedback = ChkSendCommandFeedback.IsChecked == true;
+        _worldSettings.ShowDeathMessages = ChkShowDeathMessages.IsChecked == true;
 
         // 1. Save level.dat
         var error = BedrockLevelDatService.SaveWorldSettings(_currentWorldPath, _worldSettings, _rawLevelDatNbt, _levelDatHeaderVersion);
@@ -1000,7 +1018,7 @@ public partial class MainWindow : Window
         NativeSeedMap.WorldSeed = _worldSettings.Seed;
         NativeSeedMap.DimensionId = _worldSettings.Dimension;
         NativeSeedMap.SetPlayerPosition(_playerPosX, _playerPosZ, _playerDimId);
-        NativeSeedMap.SetWorldSpawn(0, 0);
+        NativeSeedMap.SetWorldSpawn(_worldSettings.SpawnX, _worldSettings.SpawnZ);
         NativeSeedMap.SetContainers(_allLoadedContainers);
         NativeSeedMap.CenterOn(_playerPosX, _playerPosZ, _playerDimId);
     }
@@ -1045,10 +1063,12 @@ public partial class MainWindow : Window
 
     private void OnGoToSpawnPointClick(object sender, RoutedEventArgs e)
     {
-        TxtMapTargetX.Text = "0";
-        TxtMapTargetZ.Text = "0";
-        NativeSeedMap.CenterOn(0, 0, 0);
-        TxtStatus.Text = "Peta dipusatkan ke titik Spawn (0, 0).";
+        double sx = _worldSettings?.SpawnX ?? 0;
+        double sz = _worldSettings?.SpawnZ ?? 0;
+        TxtMapTargetX.Text = ((int)sx).ToString();
+        TxtMapTargetZ.Text = ((int)sz).ToString();
+        NativeSeedMap.CenterOn(sx, sz, 0);
+        TxtStatus.Text = $"Peta dipusatkan ke titik Spawn ({sx:F0}, {sz:F0}).";
     }
 
     private void OnTeleportPlayerToMapCoordsClick(object sender, RoutedEventArgs e)

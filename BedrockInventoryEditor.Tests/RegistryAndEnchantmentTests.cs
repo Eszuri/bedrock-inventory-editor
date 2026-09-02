@@ -180,4 +180,34 @@ public class RegistryAndEnchantmentTests
         Assert.Equal("Lvl 2 ➔ Lvl 5", entryModified.LevelChangeText);
         Assert.Equal("Sebelumnya: Lvl 2", entryModified.ChangeTag);
     }
+
+    [Fact]
+    public void BiomeRegistry_PaleGarden_IsRegisteredAndSampleable()
+    {
+        var paleGarden = BedrockInventoryEditor.Core.Map.Biome.BiomeRegistry.PaleGarden;
+        Assert.NotNull(paleGarden);
+        Assert.Equal("pale_garden", paleGarden.Id);
+        Assert.Equal("Pale Garden", paleGarden.Name);
+        Assert.Equal(BedrockInventoryEditor.Core.Map.Biome.BiomeCategory.Forest, paleGarden.Category);
+
+        var sampled = BedrockInventoryEditor.Core.Map.Biome.BiomeRegistry.FindClosestOverworldBiome(0.1f, 0.7f, 0.3f, 0.1f, 0.55f, 0.0f);
+        Assert.Equal("pale_garden", sampled.Id);
+    }
+
+    [Theory]
+    [InlineData("minecraft:resin_block")]
+    [InlineData("minecraft:open_eyeblossom")]
+    [InlineData("minecraft:closed_eyeblossom")]
+    [InlineData("minecraft:ominous_vault")]
+    [InlineData("minecraft:ominous_trial_spawner")]
+    [InlineData("minecraft:creaking_spawn_egg")]
+    [InlineData("minecraft:breeze_spawn_egg")]
+    [InlineData("minecraft:bogged_spawn_egg")]
+    [InlineData("minecraft:armadillo_spawn_egg")]
+    public void ItemRegistry_ContainsRecentVersionItems(string itemId)
+    {
+        var item = BedrockItemRegistry.Items.FirstOrDefault(i => i.Id == itemId);
+        Assert.NotNull(item);
+        Assert.False(string.IsNullOrWhiteSpace(item.DisplayName));
+    }
 }

@@ -22,4 +22,10 @@
     <ProjectReference Include="..\BedrockInventoryEditor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\BedrockMapEngine.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
