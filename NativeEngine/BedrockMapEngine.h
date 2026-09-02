@@ -53,6 +53,12 @@ EXPORT_API int32_t IsBedrockSlimeChunkNative(
     int32_t chunkZ
 );
 
+EXPORT_API void GetBedrockSpawnPointNative(
+    int64_t seed,
+    double* outSpawnX,
+    double* outSpawnZ
+);
+
 EXPORT_API void RenderBiomeMapNative(
     int64_t seed,
     int32_t dimensionId,

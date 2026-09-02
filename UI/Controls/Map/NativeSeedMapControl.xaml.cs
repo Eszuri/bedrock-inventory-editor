@@ -74,6 +74,8 @@ public partial class NativeSeedMapControl : UserControl
     private Point? _lastMousePos;
     private Point? _mouseDownPos;
     private bool _isPanning = false;
+    private bool _isInteracting = false;
+    private DispatcherTimer? _interactionDebounceTimer;
     private Point _hoverMousePos;
 
     private WriteableBitmap? _mapBitmap;
@@ -114,7 +116,11 @@ public partial class NativeSeedMapControl : UserControl
             if (_worldSeed != value)
             {
                 _worldSeed = value;
+                var (sx, sz) = NativeEngineBridge.GetWorldSpawn(_worldSeed);
+                _spawnX = sx;
+                _spawnZ = sz;
                 RequestRender();
+                RenderOverlays();
             }
         }
     }
@@ -163,6 +169,17 @@ public partial class NativeSeedMapControl : UserControl
     public NativeSeedMapControl()
     {
         InitializeComponent();
+        _interactionDebounceTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(120)
+        };
+        _interactionDebounceTimer.Tick += (s, e) =>
+        {
+            _interactionDebounceTimer.Stop();
+            _isInteracting = false;
+            RequestRender();
+        };
+
         CompositionTarget.Rendering += OnCompositionRendering;
         LstStructureFilters.ItemsSource = _structureFilters;
         UpdateActiveFilterCountBadge();
@@ -179,8 +196,17 @@ public partial class NativeSeedMapControl : UserControl
 
     public void SetWorldSpawn(double x, double z)
     {
-        _spawnX = x;
-        _spawnZ = z;
+        if (x == 0 && z == 0 && _worldSeed != 0)
+        {
+            var (sx, sz) = NativeEngineBridge.GetWorldSpawn(_worldSeed);
+            _spawnX = sx;
+            _spawnZ = sz;
+        }
+        else
+        {
+            _spawnX = x;
+            _spawnZ = z;
+        }
         RenderOverlays();
     }
 
@@ -260,14 +286,15 @@ public partial class NativeSeedMapControl : UserControl
         double cx = _centerX;
         double cz = _centerZ;
         bool isPanning = _isPanning;
+        bool isInteracting = _isPanning || _isInteracting;
 
         bool showBiomes = ChkLayerBiomes.IsChecked == true;
         bool showGrid = ChkLayerGrid?.IsChecked == true && zoom >= 0.15;
         bool showSlime = ChkLayerSlime?.IsChecked == true && dim == 0;
         var enabledStructures = GetEnabledStructureTypes();
 
-        // Ultra-fast rendering: step 4 during mouse drag (smooth 60 FPS panning), step 1 when resting (100% pixel-perfect block & river precision)
-        int step = isPanning ? 4 : (zoom < 0.2 ? 2 : 1);
+        // Ultra-lightweight LOD: step 6-8 during zoom/drag (instant 0.1ms render), step 2-4 at rest (lightweight & crisp)
+        int step = isInteracting ? (zoom < 0.35 ? 8 : 6) : (zoom < 0.35 ? 4 : (zoom < 0.8 ? 2 : 1));
 
         Task.Run(() =>
         {
@@ -327,9 +354,9 @@ public partial class NativeSeedMapControl : UserControl
                 });
             }
 
-            // Fast structure scan only when not dragging
+            // Fast structure scan ONLY when completely resting (not dragging, not zooming)
             List<StructureDefinition> structures = _visibleStructures;
-            if (!isPanning && enabledStructures.Count > 0)
+            if (!isInteracting && enabledStructures.Count > 0)
             {
                 double minBx = cx - halfW / zoom;
                 double maxBx = cx + halfW / zoom;
@@ -353,11 +380,14 @@ public partial class NativeSeedMapControl : UserControl
                     0
                 );
 
-                _visibleStructures = structures;
-                RenderOverlays();
+                if (!isInteracting)
+                {
+                    _visibleStructures = structures;
+                    RenderOverlays();
+                    UpdateInspectorHud(_hoverMousePos);
+                }
 
                 _isRenderRunning = false;
-                UpdateInspectorHud(_hoverMousePos);
             });
         });
     }
@@ -853,10 +883,15 @@ public partial class NativeSeedMapControl : UserControl
             _centerZ -= dz / _zoom;
 
             _lastMousePos = currentPos;
+            _isInteracting = true;
+            _interactionDebounceTimer?.Stop();
+            _interactionDebounceTimer?.Start();
             RequestRender();
         }
-
-        UpdateInspectorHud(_hoverMousePos);
+        else
+        {
+            UpdateInspectorHud(_hoverMousePos);
+        }
     }
 
     private void OnViewportMouseUp(object sender, MouseButtonEventArgs e)
@@ -878,6 +913,9 @@ public partial class NativeSeedMapControl : UserControl
                 }
             }
 
+            _isInteracting = true;
+            _interactionDebounceTimer?.Stop();
+            _interactionDebounceTimer?.Start();
             RequestRender();
         }
     }
@@ -888,6 +926,9 @@ public partial class NativeSeedMapControl : UserControl
         {
             _isPanning = false;
             Mouse.Capture(null);
+            _isInteracting = true;
+            _interactionDebounceTimer?.Stop();
+            _interactionDebounceTimer?.Start();
             RequestRender();
         }
     }
@@ -905,7 +946,11 @@ public partial class NativeSeedMapControl : UserControl
         {
             _centerX = targetBx - (mousePos.X - ViewportGrid.ActualWidth / 2.0) / newZoom;
             _centerZ = targetBz - (mousePos.Y - ViewportGrid.ActualHeight / 2.0) / newZoom;
-            Zoom = newZoom;
+            _zoom = newZoom;
+            TxtZoomLevel.Text = $"{(_zoom * 200):0}%";
+            _isInteracting = true;
+            _interactionDebounceTimer?.Stop();
+            _interactionDebounceTimer?.Start();
             RequestRender();
         }
     }

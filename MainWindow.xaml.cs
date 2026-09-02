@@ -1018,7 +1018,15 @@ public partial class MainWindow : Window
         NativeSeedMap.WorldSeed = _worldSettings.Seed;
         NativeSeedMap.DimensionId = _worldSettings.Dimension;
         NativeSeedMap.SetPlayerPosition(_playerPosX, _playerPosZ, _playerDimId);
-        NativeSeedMap.SetWorldSpawn(_worldSettings.SpawnX, _worldSettings.SpawnZ);
+        if (_worldSettings.SpawnX != 0 || _worldSettings.SpawnZ != 0)
+        {
+            NativeSeedMap.SetWorldSpawn(_worldSettings.SpawnX, _worldSettings.SpawnZ);
+        }
+        else
+        {
+            var (sx, sz) = Core.Map.NativeEngineBridge.GetWorldSpawn(_worldSettings.Seed);
+            NativeSeedMap.SetWorldSpawn(sx, sz);
+        }
         NativeSeedMap.SetContainers(_allLoadedContainers);
         NativeSeedMap.CenterOn(_playerPosX, _playerPosZ, _playerDimId);
     }
@@ -1029,6 +1037,8 @@ public partial class MainWindow : Window
         if (long.TryParse(TxtMapSeed.Text.Trim(), out var s))
         {
             NativeSeedMap.WorldSeed = s;
+            var (sx, sz) = Core.Map.NativeEngineBridge.GetWorldSpawn(s);
+            NativeSeedMap.SetWorldSpawn(sx, sz);
         }
     }
 

@@ -417,4 +417,16 @@ public class NativeSeedMapTests
         Assert.True(NativeEngineBridge.IsNativeAvailable);
         Assert.Contains(buffer, color => color != 0u);
     }
+
+    [Fact]
+    public void NativeEngineBridge_GetWorldSpawn_ReturnsValidSpawnCoordinates()
+    {
+        long seed = 12345L;
+        var (sx, sz) = NativeEngineBridge.GetWorldSpawn(seed);
+
+        Assert.True(NativeEngineBridge.IsNativeAvailable);
+        // World spawn is typically within radius 1000 of origin
+        Assert.InRange(sx, -2000, 2000);
+        Assert.InRange(sz, -2000, 2000);
+    }
 }

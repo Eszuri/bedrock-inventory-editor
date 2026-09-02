@@ -9,6 +9,7 @@
 #include <cstring>
 #include <algorithm>
 #include <vector>
+#include <thread>
 
 // ═══════════════════════════════════════════════════════════════════
 // 1. BIOME LOOKUP & COLOR TABLE (100% OFFICIAL MOJANG PARITY)
@@ -117,7 +118,7 @@ static inline BiomeInfo getBiomeInfo(int id) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// 2. GENERATOR CACHE & FAST SAMPLER (ZERO GC, VORONOI EXACT PRECISION)
+// 2. GENERATOR CACHE & ULTRA-FAST PARALLEL SAMPLER
 // ═══════════════════════════════════════════════════════════════════
 
 static thread_local Generator t_generator;
@@ -140,13 +141,19 @@ static inline void ensureGenerator(int64_t seed, int32_t dimId) {
     }
 }
 
-static inline int sampleBiomeFast(int dim, int blockX, int blockY, int blockZ) {
+static inline int sampleBiomeFast(const Generator* g, int dim, int blockX, int blockY, int blockZ, bool useVoronoi) {
     if (dim == DIM_OVERWORLD) {
         int x4, y4, z4;
-        voronoiAccess3D(t_generator.sha, blockX, blockY, blockZ, &x4, &y4, &z4);
-        return sampleBiomeNoise(&t_generator.bn, NULL, x4, y4, z4, NULL, 0);
+        if (useVoronoi) {
+            voronoiAccess3D(g->sha, blockX, blockY, blockZ, &x4, &y4, &z4);
+        } else {
+            x4 = blockX >> 2;
+            y4 = 16;
+            z4 = blockZ >> 2;
+        }
+        return sampleBiomeNoise(&g->bn, NULL, x4, y4, z4, NULL, 0);
     } else {
-        return getBiomeAt(&t_generator, 1, blockX, blockY, blockZ);
+        return getBiomeAt(g, 1, blockX, blockY, blockZ);
     }
 }
 
@@ -171,7 +178,7 @@ EXPORT_API void SampleBiomeNative(
     int bx = (int)std::floor(blockX);
     int bz = (int)std::floor(blockZ);
 
-    int biomeId = sampleBiomeFast(cubiomesDim, bx, blockY, bz);
+    int biomeId = sampleBiomeFast(&t_generator, cubiomesDim, bx, blockY, bz, true);
 
     BiomeInfo info = getBiomeInfo(biomeId);
     outResult->biomeId = biomeId;
@@ -199,29 +206,82 @@ EXPORT_API void RenderBiomeMapNative(
     double halfW = width / 2.0;
     double halfH = height / 2.0;
     double invZoom = 1.0 / zoom;
-    int blockY = 64; // Sea level Y=64 for exact surface river & biome detection
+    int blockY = 64;
+    bool useVoronoi = (step == 1 && zoom >= 0.75);
 
-    for (int y = 0; y < height; y += step) {
-        double worldZ = centerZ + (y - halfH) * invZoom;
-        int blockZ = (int)std::floor(worldZ);
+    const Generator* gPtr = &t_generator;
 
-        for (int x = 0; x < width; x += step) {
-            double worldX = centerX + (x - halfW) * invZoom;
-            int blockX = (int)std::floor(worldX);
+    unsigned int numThreads = std::thread::hardware_concurrency();
+    if (numThreads == 0) numThreads = 4;
+    if (numThreads > 16) numThreads = 16;
 
-            int biomeId = sampleBiomeFast(cubiomesDim, blockX, blockY, blockZ);
-            BiomeInfo info = getBiomeInfo(biomeId);
-            uint32_t color = info.color;
+    int totalStepsY = (height + step - 1) / step;
+    if ((int)numThreads > totalStepsY && totalStepsY > 0) {
+        numThreads = (unsigned int)totalStepsY;
+    }
 
-            int endY = std::min(y + step, height);
-            int endX = std::min(x + step, width);
-            for (int py = y; py < endY; py++) {
-                int rowIdx = py * width;
-                for (int px = x; px < endX; px++) {
-                    outPixelBuffer[rowIdx + px] = color;
+    if (numThreads <= 1) {
+        for (int y = 0; y < height; y += step) {
+            double worldZ = centerZ + (y - halfH) * invZoom;
+            int blockZ = (int)std::floor(worldZ);
+
+            for (int x = 0; x < width; x += step) {
+                double worldX = centerX + (x - halfW) * invZoom;
+                int blockX = (int)std::floor(worldX);
+
+                int biomeId = sampleBiomeFast(gPtr, cubiomesDim, blockX, blockY, blockZ, useVoronoi);
+                BiomeInfo info = getBiomeInfo(biomeId);
+                uint32_t color = info.color;
+
+                int endY = std::min(y + step, height);
+                int endX = std::min(x + step, width);
+                for (int py = y; py < endY; py++) {
+                    int rowIdx = py * width;
+                    for (int px = x; px < endX; px++) {
+                        outPixelBuffer[rowIdx + px] = color;
+                    }
                 }
             }
         }
+        return;
+    }
+
+    std::vector<std::thread> workers;
+    workers.reserve(numThreads);
+
+    for (unsigned int t = 0; t < numThreads; t++) {
+        int startStepY = (totalStepsY * t) / numThreads;
+        int endStepY = (totalStepsY * (t + 1)) / numThreads;
+
+        workers.emplace_back([=]() {
+            for (int sy = startStepY; sy < endStepY; sy++) {
+                int y = sy * step;
+                double worldZ = centerZ + (y - halfH) * invZoom;
+                int blockZ = (int)std::floor(worldZ);
+
+                for (int x = 0; x < width; x += step) {
+                    double worldX = centerX + (x - halfW) * invZoom;
+                    int blockX = (int)std::floor(worldX);
+
+                    int biomeId = sampleBiomeFast(gPtr, cubiomesDim, blockX, blockY, blockZ, useVoronoi);
+                    BiomeInfo info = getBiomeInfo(biomeId);
+                    uint32_t color = info.color;
+
+                    int endY = std::min(y + step, height);
+                    int endX = std::min(x + step, width);
+                    for (int py = y; py < endY; py++) {
+                        int rowIdx = py * width;
+                        for (int px = x; px < endX; px++) {
+                            outPixelBuffer[rowIdx + px] = color;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    for (auto& w : workers) {
+        if (w.joinable()) w.join();
     }
 }
 
@@ -305,7 +365,7 @@ EXPORT_API int32_t FindStructuresNative(
                 if (!getStructurePos(entry.cubiomesType, MC_1_21, (uint64_t)seed, rx, rz, &pos)) continue;
 
                 if (pos.x >= minBx && pos.x <= maxBx && pos.z >= minBz && pos.z <= maxBz) {
-                    int biomeId = sampleBiomeFast(entry.dim, pos.x, 64, pos.z);
+                    int biomeId = sampleBiomeFast(&t_generator, entry.dim, pos.x, 64, pos.z, false);
                     if (isViableFeatureBiome(MC_1_21, entry.cubiomesType, biomeId)) {
                         auto& res = outResults[count++];
                         res.type = entry.appTypeId;
@@ -334,4 +394,13 @@ EXPORT_API int32_t IsBedrockSlimeChunkNative(int32_t chunkX, int32_t chunkZ) {
     uint32_t seed = (uint32_t)chunkX * 0x1f1f1f1f ^ (uint32_t)chunkZ;
     std::mt19937 mt(seed);
     return (mt() % 10 == 0) ? 1 : 0;
+}
+
+EXPORT_API void GetBedrockSpawnPointNative(int64_t seed, double* outSpawnX, double* outSpawnZ) {
+    if (outSpawnX && outSpawnZ) {
+        ensureGenerator(seed, 0);
+        Pos p = getSpawn(&t_generator);
+        *outSpawnX = (double)p.x;
+        *outSpawnZ = (double)p.z;
+    }
 }

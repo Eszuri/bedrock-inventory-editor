@@ -72,6 +72,9 @@ public static class NativeEngineBridge
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "IsBedrockSlimeChunkNative")]
     private static extern int IsBedrockSlimeChunkNative(int chunkX, int chunkZ);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetBedrockSpawnPointNative")]
+    private static extern void GetBedrockSpawnPointNative(long seed, out double outSpawnX, out double outSpawnZ);
+
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "RenderBiomeMapNative")]
     private static extern void RenderBiomeMapNative(
         long seed,
@@ -240,5 +243,25 @@ public static class NativeEngineBridge
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// Computes the exact Minecraft world spawn point from the world seed.
+    /// </summary>
+    public static (double X, double Z) GetWorldSpawn(long seed)
+    {
+        if (IsNativeAvailable)
+        {
+            try
+            {
+                GetBedrockSpawnPointNative(seed, out double sx, out double sz);
+                return (sx, sz);
+            }
+            catch
+            {
+                _nativeAvailable = false;
+            }
+        }
+        return (0, 0);
     }
 }
